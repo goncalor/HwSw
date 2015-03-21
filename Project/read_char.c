@@ -1,26 +1,50 @@
+/**
+ * Reads file and gives statistics of each character/symbol
+ */
 #include <stdio.h>
 #include <stdlib.h>
 
-int main(){
+#define ALPHABET_GLOBAL "\0000000\a\b\t\n\v\f\r000000000000000\e0000 !\"#$%&\'()*+,-./0123456789:;<=>\?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~"
+
+/**
+ * Reads every character/symbol and generates its statistics
+ * @param  file_alphabet file alphabet(characters/symbols that
+ *                       are used in the file)
+ * @param  freq          ocuurence of each letter/symbol
+ * @return               size of alphabet
+ */
+int read_char(char ** file_alphabet, int ** freq, char * file){
+  /**
+   * Variable declarations
+   */
   FILE * read_me;
   char read;
-  int i, * freq, total = 0, add = 0;
-  char alphabet_all[] =
-  "\0000000\a\b\t\n\v\f\r000000000000000\e0000 !\"#$%&\'()*+,-./0123456789:;<=>\?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
-  char * alphabet;
-  int * freq_all;
+  int * freq_all, total = 0, add = 0;
 
-  freq_all = (int *) malloc(sizeof(alphabet_all) * sizeof(int));
+  /**
+   * Create Array to store each ocurrence of a letter/symbol
+   */
+  freq_all = (int *) malloc(sizeof(ALPHABET_GLOBAL) * sizeof(int));
 
-  for(i = 0; i < sizeof(freq_all); i++){
-    freq_all[i] = 0;
+  /**
+   * Initialize Array
+   */
+  for(int j = 0; j < sizeof(freq_all); j++){
+    freq_all[j] = 0;
   }
 
-  if((read_me = fopen("read_me", "r")) == NULL){
+  /**
+   * Create file descriptor
+   */
+  if((read_me = fopen(file, "r")) == NULL){
     perror("fopen: ");
     exit(1);
   }
 
+  /**
+   * Read file and count each occurrence of a letter/symbol
+   * total -> how many letters are in the file
+   */
   while((read = getc(read_me)) != EOF){
     if(read <= '~'){
       if(freq_all[(short) read] == 0){
@@ -30,32 +54,47 @@ int main(){
     }
   }
 
-  printf("\nTotal chars: %d\n", total);
-  freq = (int *) malloc(total * sizeof(int));
-  if(freq == NULL){
+  printf("Total: %d\n", total);
+
+  /**
+   * Allocate memory for the exit arrays
+   */
+  *freq = malloc(total * sizeof(int));
+  if(*freq == NULL){
     perror("malloc(freq): ");
   }
 
-  alphabet = (char *) malloc(total * sizeof(char));
-  if(alphabet == NULL){
+  *file_alphabet = malloc(total * sizeof(char));
+  if(*file_alphabet == NULL){
     perror("malloc(alphabet): ");
   }
 
-  for(i = 0; i < sizeof(alphabet_all); i++){
+  /**
+   * Store each letter/symbol ocurrence and itself in the exit arrays
+   */
+  for(int i = 0; i < sizeof(ALPHABET_GLOBAL); i++){
     if(freq_all[i] != 0){
-      freq[add] = freq_all[i];
-      alphabet[add] = alphabet_all[i];
+      (*freq)[add] = freq_all[i];
+      (*file_alphabet)[add] = ALPHABET_GLOBAL[i];
       add++;
     }
   }
 
-  for(i = 0; i < total; i++){
-    printf("%c -> %d\n", alphabet[i], freq[i]);
-  }
-
-  free(freq);
-  free(alphabet);
+  /**
+   * Close file descriptor
+   */
   fclose(read_me);
 
-  exit(0);
+  return total;
+}
+
+/**
+ * Prints letter/symbol array aswell aseach ocurrence
+ * @param file_alphabet file alphabet (letters/symbols used in FILE)
+ * @param freq          number of ocurrences of each symbol/letter
+ */
+void print_array(char * file_alphabet, int * freq, int total){
+  for(int i = 0; i < total; i++){
+    printf("%c -> %d\n", file_alphabet[i], freq[i]);
+  }
 }
