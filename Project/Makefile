@@ -4,10 +4,10 @@ FLAGS = -Wall -I$(INCLUDES)
 ODIR = obj
 SRCDIR = src
 
-_DEPS = read_char.h
+_DEPS = read_char.h misc.h huffman_code.h
 DEPS = $(patsubst %,$(INCLUDES)/%,$(_DEPS))
 
-_OBJ = huffman.o read_char.o
+_OBJ = huffman.o read_char.o misc.o huffman_code.o
 OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 
 $(ODIR)/%.o: $(SRCDIR)/%.c $(DEPS)

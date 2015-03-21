@@ -1,28 +1,8 @@
-// C program for Huffman Coding
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
-#include "read_char.h"
-
-// This constant can be avoided by explicitly calculating height of Huffman Tree
-#define MAX_TREE_HT 100
-
-// A Huffman tree node
-struct MinHeapNode
-{
-    char data;  // One of the input characters
-    unsigned freq;  // Frequency of the character
-    struct MinHeapNode *left, *right; // Left and right child of this node
-};
-
-// A Min Heap:  Collection of min heap (or Hufmman tree) nodes
-struct MinHeap
-{
-    unsigned size;    // Current size of min heap
-    unsigned capacity;   // capacity of min heap
-    struct MinHeapNode **array;  // Attay of minheap node pointers
-};
+#include "huffman_code.h"
+#include "misc.h"
 
 // A utility function allocate a new min heap node with given character
 // and frequency of the character
@@ -200,9 +180,39 @@ void printCodes(struct MinHeapNode* root, int arr[], int top)
     }
 }
 
+void encode_tree(struct MinHeapNode* root){
+  int aux;
+
+  if(!isLeaf(root)){
+    putchar('0');
+    encode_tree(root->left);
+    encode_tree(root->right);
+  }else{
+    putchar('1');
+    aux = int2bin((unsigned int) root->data);
+    printf("%d", aux);
+  }
+}
+
+void encode_text(char * file){
+  FILE * read_me;
+  char read;
+
+  if((read_me = fopen(file, "r")) == NULL){
+    perror("fopen: ");
+    exit(1);
+  }
+
+  while((read = getc(read_me)) != EOF){
+
+  }
+  puts("EOF");
+
+}
+
 // The main function that builds a Huffman Tree and print codes by traversing
 // the built Huffman Tree
-void HuffmanCodes(char data[], int freq[], int size)
+void HuffmanCodes(char data[], int freq[], int size, char * file)
 {
    //  Construct Huffman Tree
    struct MinHeapNode* root = buildHuffmanTree(data, freq, size);
@@ -210,31 +220,10 @@ void HuffmanCodes(char data[], int freq[], int size)
    // Print Huffman codes using the Huffman tree built above
    int arr[MAX_TREE_HT], top = 0;
    printCodes(root, arr, top);
-}
-
-// Driver program to test above functions
-int main(int argc, char * argv[]){
-    char * arr = NULL;
-    int * freq = NULL;
-    char * file = NULL;
-    int size_arr = 0;
-
-    if(argc > 2 || argc == 1 ||
-       strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--help") == 0){
-      puts("Usage:");
-      puts("\t./huffman name-of-file");
-      exit(0);
-    }else{
-      file = argv[1];
-    }
-
-    size_arr = read_char(&arr, &freq, file);
-    //print_array(arr, freq, size_arr);
-
-    int size = size_arr/sizeof(arr[0]);
-    HuffmanCodes(arr, freq, size);
-
-    free(arr);
-    free(freq);
-    exit(0);
+   putchar('\n');
+   puts("--------------FILE OUT--------------");
+   putchar('\n');
+   encode_tree(root);
+   putchar('\n');
+   encode_text(file);
 }
