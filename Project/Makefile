@@ -1,9 +1,21 @@
 CC = gcc
-FLAGS = -Wall
+INCLUDES = includes/
+FLAGS = -Wall -I$(INCLUDES)
+ODIR = obj
+SRCDIR = src
 
-huffman: huffman.o read_char.o
-	$(CC) $(FLAGS) -o huffman huffman.o read_char.o
+_DEPS = read_char.h
+DEPS = $(patsubst %,$(INCLUDES)/%,$(_DEPS))
+
+_OBJ = huffman.o read_char.o
+OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
+
+$(ODIR)/%.o: $(SRCDIR)/%.c $(DEPS)
+	$(CC) -c -o $@ $< $(FLAGS)
+
+huffman: $(OBJ)
+	$(CC) $(FLAGS) -o $@ $^
 
 .PHONY: clean
 clean:
-	rm -f *.o huffman
+	rm -f obj/*.o huffman
