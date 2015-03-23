@@ -102,7 +102,7 @@ void printArr(int arr[], int n)
     int i;
     for (i = 0; i < n; ++i)
         printf("%d", arr[i]);
-    printf("\n");
+    putchar(' ');
 }
 
 // Utility function to check if this node is leaf
@@ -155,27 +155,27 @@ struct MinHeapNode* buildHuffmanTree(char data[], int freq[], int size)
 
 // Prints huffman codes from the root of Huffman Tree.  It uses arr[] to
 // store codes
-void printCodes(struct MinHeapNode* root, int arr[], int top)
+void printCodes(struct MinHeapNode* root, int arr[], int top, char a)
 {
     // Assign 0 to left edge and recur
     if (root->left)
     {
         arr[top] = 0;
-        printCodes(root->left, arr, top + 1);
+        printCodes(root->left, arr, top + 1, a);
     }
 
     // Assign 1 to right edge and recur
     if (root->right)
     {
         arr[top] = 1;
-        printCodes(root->right, arr, top + 1);
+        printCodes(root->right, arr, top + 1, a);
     }
 
     // If this is a leaf node, then it contains one of the input
     // characters, print the character and its code from arr[]
-    if (isLeaf(root))
+    if (isLeaf(root) && root->data == a)
     {
-        printf("%c: ", root->data);
+        //printf("%c: ", root->data);
         printArr(arr, top);
     }
 }
@@ -194,9 +194,10 @@ void encode_tree(struct MinHeapNode* root){
   }
 }
 
-void encode_text(char * file){
+void encode_text(char * file, struct MinHeapNode* root){
   FILE * read_me;
   char read;
+  int arr[MAX_TREE_HT], top = 0;
 
   if((read_me = fopen(file, "r")) == NULL){
     perror("fopen: ");
@@ -204,7 +205,7 @@ void encode_text(char * file){
   }
 
   while((read = getc(read_me)) != EOF){
-
+    printCodes(root, arr, top, read);
   }
   puts("EOF");
 
@@ -218,12 +219,11 @@ void HuffmanCodes(char data[], int freq[], int size, char * file)
    struct MinHeapNode* root = buildHuffmanTree(data, freq, size);
 
    // Print Huffman codes using the Huffman tree built above
-   int arr[MAX_TREE_HT], top = 0;
-   printCodes(root, arr, top);
+   //printCodes(root, arr, top);
    putchar('\n');
    puts("--------------FILE OUT--------------");
    putchar('\n');
    encode_tree(root);
-   putchar('\n');
-   encode_text(file);
+   puts("\r\n");
+   encode_text(file, root);
 }

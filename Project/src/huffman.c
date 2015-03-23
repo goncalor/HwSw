@@ -24,7 +24,7 @@ int main(int argc, char * argv[]){
     }
 
     size_arr = read_char(&arr, &freq, file);
-    //print_array(arr, freq, size_arr);
+    print_array(arr, freq, size_arr);
 
     int size = size_arr/sizeof(arr[0]);
     HuffmanCodes(arr, freq, size, file);
