@@ -54,8 +54,6 @@ int read_char(char ** file_alphabet, int ** freq, char * file){
     }
   }
 
-  printf("Total: %d\n", total);
-
   /**
    * Allocate memory for the exit arrays
    */
@@ -95,6 +93,6 @@ int read_char(char ** file_alphabet, int ** freq, char * file){
  */
 void print_array(char * file_alphabet, int * freq, int total){
   for(int i = 0; i < total; i++){
-    printf("%c -> %d\n", file_alphabet[i], freq[i]);
+    //printf("%c -> %d\n", file_alphabet[i], freq[i]);
   }
 }
