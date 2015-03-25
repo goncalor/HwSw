@@ -184,6 +184,10 @@ void printCodes(struct MinHeapNode* root, int arr[], int top, char a)
     }
 }
 
+/**
+ * Encodes tree in header of FILE
+ * @param root root of tree
+ */
 void encode_tree(struct MinHeapNode* root){
   int * aux;
 
@@ -207,6 +211,11 @@ void encode_tree(struct MinHeapNode* root){
   }
 }
 
+/**
+ * Encodes text in file by searching the tree for the character
+ * @param file file to read the text from
+ * @param root root of tree
+ */
 void encode_text(char * file, struct MinHeapNode* root){
   FILE * read_me;
   char read;
@@ -234,7 +243,7 @@ void HuffmanCodes(char data[], int freq[], int size, char * file)
    struct MinHeapNode* root = buildHuffmanTree(data, freq, size);
    bits = 0;
 
-   // Print Huffman codes using the Huffman tree built above
+   // Print binary contents of file
    putchar('\n');
    puts("--------------FILE OUT--------------");
    putchar('\n');
@@ -243,14 +252,15 @@ void HuffmanCodes(char data[], int freq[], int size, char * file)
    encode_text(file, root);
    putchar('\n');
 
+   // Print statistics of compression
    puts("----------------STATS---------------");
    putchar('\n');
    puts("Original file");
    printf("\tSize of file (bytes): %lld\n", fsize(file));
    putchar('\n');
    puts("Compressed file");
-   printf("\tTotal Number of bits: %d\n", bits);
-   printf("\tTotal Number of bytes: %d\n", (bits + 4)/8);
+   printf("\tSize of compressed file (bits): %d\n", bits);
+   printf("\tSize of compressed file (bytes): %d\n", (bits + 4)/8);
    putchar('\n');
    ratio = ((float) bits/8.0)/((float) fsize(file));
    printf("Compression Ratio: %.2f%%\n", (1.0 - ratio) * 100.0);
