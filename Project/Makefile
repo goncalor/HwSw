@@ -1,6 +1,6 @@
 CC = gcc
 INCLUDES = includes/
-FLAGS = -Wall -I$(INCLUDES) -g
+FLAGS = -Wall -I$(INCLUDES) -g -std=gnu99
 ODIR = obj
 SRCDIR = src
 

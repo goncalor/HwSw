@@ -2,7 +2,7 @@
 #define HUFF
 
 // This constant can be avoided by explicitly calculating height of Huffman Tree
-#define MAX_TREE_HT 100
+#define MAX_TREE_HT 256
 
 // A Huffman tree node
 struct MinHeapNode
