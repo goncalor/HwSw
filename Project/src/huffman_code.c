@@ -4,8 +4,6 @@
 #include "huffman_code.h"
 #include "misc.h"
 
-int bits;
-
 // A utility function allocate a new min heap node with given character
 // and frequency of the character
 struct MinHeapNode* newNode(char data, unsigned freq)
@@ -102,10 +100,8 @@ void buildMinHeap(struct MinHeap* minHeap)
 void printArr(int arr[], int n)
 {
     int i;
-    for (i = 0; i < n; ++i){
+    for (i = 0; i < n; ++i)
         printf("%d", arr[i]);
-        bits++;
-    }
     putchar(' ');
 }
 
@@ -185,25 +181,16 @@ void printCodes(struct MinHeapNode* root, int arr[], int top, char a)
 }
 
 void encode_tree(struct MinHeapNode* root){
-  int * aux;
+  int aux;
 
   if(!isLeaf(root)){
     putchar('0');
-    bits++;
     encode_tree(root->left);
     encode_tree(root->right);
   }else{
     putchar('1');
-    bits++;
-    putchar(' ');
-    aux = (int *) malloc(8 * sizeof(int));
-    aux = int2bin(aux, root->data);
-    for(int i = 7; i >= 0; i--){
-      printf("%d", aux[i]);
-      bits++;
-    }
-    free(aux);
-    putchar(' ');
+    aux = int2bin((unsigned int) root->data);
+    printf("%d", aux);
   }
 }
 
@@ -220,41 +207,23 @@ void encode_text(char * file, struct MinHeapNode* root){
   while((read = getc(read_me)) != EOF){
     printCodes(root, arr, top, read);
   }
-  puts("\nEOF\n");
+  puts("EOF");
 
-  fclose(read_me);
 }
 
 // The main function that builds a Huffman Tree and print codes by traversing
 // the built Huffman Tree
 void HuffmanCodes(char data[], int freq[], int size, char * file)
 {
-  float ratio;
    //  Construct Huffman Tree
    struct MinHeapNode* root = buildHuffmanTree(data, freq, size);
-   bits = 0;
 
    // Print Huffman codes using the Huffman tree built above
+   //printCodes(root, arr, top);
    putchar('\n');
    puts("--------------FILE OUT--------------");
    putchar('\n');
    encode_tree(root);
    puts("\r\n");
    encode_text(file, root);
-   putchar('\n');
-
-   puts("----------------STATS---------------");
-   putchar('\n');
-   puts("Original file");
-   printf("\tSize of file (bytes): %lld\n", fsize(file));
-   putchar('\n');
-   puts("Compressed file");
-   printf("\tTotal Number of bits: %d\n", bits);
-   printf("\tTotal Number of bytes: %d\n", (bits + 4)/8);
-   putchar('\n');
-   ratio = ((float) bits/8.0)/((float) fsize(file));
-   printf("Compression Ratio: %.2f%%\n", (1.0 - ratio) * 100.0);
-   putchar('\n');
-   printf("MinHeapNode Size (bytes): %lu\n", sizeof(struct MinHeapNode));
-   printf("MinHeap Size (bytes): %lu\n", sizeof(struct MinHeap));
 }
