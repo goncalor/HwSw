@@ -4,7 +4,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define ALPHABET_GLOBAL "\0000000\a\b\t\n\v\f\r000000000000000\e0000 !\"#$%&\'()*+,-./0123456789:;<=>\?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~"
+//#define ALPHABET_GLOBAL "\0000000\a\b\t\n\v\f\r000000000000000\e0000 !\"#$%&\'()*+,-./0123456789:;<=>\?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~"
+
+char ALPHABET_GLOBAL[256];
 
 /**
  * Reads every character/symbol and generates its statistics
@@ -19,12 +21,16 @@ int read_char(char ** file_alphabet, int ** freq, char * file){
    */
   FILE * read_me;
   char read;
-  int * freq_all, total = 0, add = 0;
+  int * freq_all, total = 0, add = 0, i;
 
   /**
    * Create Array to store each ocurrence of a letter/symbol
    */
-  freq_all = (int *) malloc(sizeof(ALPHABET_GLOBAL) * sizeof(int));
+
+  for(i=0; i<256; i++)
+	  ALPHABET_GLOBAL[i] = i;
+
+  freq_all = (int *) malloc(256 * sizeof(int));
 
   /**
    * Initialize Array
@@ -72,7 +78,7 @@ int read_char(char ** file_alphabet, int ** freq, char * file){
   /**
    * Store each letter/symbol ocurrence and itself in the exit arrays
    */
-  for(int i = 0; i < sizeof(ALPHABET_GLOBAL); i++){
+  for(int i = 0; i < 256; i++){
     if(freq_all[i] != 0){
       (*freq)[add] = freq_all[i];
       (*file_alphabet)[add] = ALPHABET_GLOBAL[i];
