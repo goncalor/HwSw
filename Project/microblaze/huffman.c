@@ -4,12 +4,16 @@
 #include "huffman_code.h"
 #include "microblaze.h"
 
-#define debug
+//#define debug
 
-#define MAX_FILE_SIZE 128*1024*1024	// max 128 MB, external memory size
+#define MAX_FILE_SIZE 7*1024*1024	// max 128 MB, external memory size
 #define FILE_END_CODE 0
 
+#ifndef MB
 char file[MAX_FILE_SIZE];
+#else
+volatile char *file = (char *) (0xa8000000);
+#endif
 
 unsigned stats[256];	// for 128 MB we might have 2^27 occurrences of a single character, hence uint32
 
@@ -54,7 +58,7 @@ void compute_stats()
 	}
 	while(file[i] != FILE_END_CODE);
 
-	//stats[FILE_END_CODE] = 1;	// possibly not needed
+	//stats[FILE_END_CODE] = 1;	// end of file code appears once. possibly not needed
 }
 
 
@@ -74,6 +78,7 @@ int main(int argc, char **argv)
 	//puts(file);
 #endif
 
+	file[MAX_FILE_SIZE-1] = FILE_END_CODE;	// place end of file code. to be sage
 	compute_stats();
 
 #ifdef debug
@@ -84,7 +89,7 @@ int main(int argc, char **argv)
 	for(i=0; i<256; i++)
 	{
 		xil_printf("%d -> \n", i);
-		xil_printf("%d\n"stats[i]);
+		xil_printf("%d\n", stats[i]);
 	}
 #endif
 #endif
@@ -123,8 +128,13 @@ int main(int argc, char **argv)
 	puts("----------------STATS---------------");
 	putchar('\n');
 	puts("Compressed file");
+
+#ifndef MB
 	printf("\tSize of compressed file (bits): %d\n", bits);
 	printf("\tSize of compressed file (bytes): %d\n", (bits + 4)/8);
-
+#else
+	xil_printf("\tSize of compressed file (bits): %d\n", bits);
+	xil_printf("\tSize of compressed file (bytes): %d\n", (bits + 4)/8);
+#endif
 	return 0;
 }

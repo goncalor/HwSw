@@ -101,7 +101,11 @@ void printArr(int arr[], int n)
 {
 	int i;
 	for (i = 0; i < n; ++i){
+#ifndef MB
 		printf("%d", arr[i]);
+#else
+		xil_printf("%d", arr[i]);
+#endif
 		bits++;
 	}
 	putchar(' ');
@@ -191,26 +195,30 @@ void printCodes(MinHeapNode* root, int arr[], int top, char a)
  * @param root root of tree
  */
 void encode_tree(struct MinHeapNode* root){
-  int * aux;
+	int * aux, i;
 
-  if(!isLeaf(root)){
-    putchar('0');
-    bits++;
-    encode_tree(root->left);
-    encode_tree(root->right);
-  }else{
-    putchar('1');
-    bits++;
-    putchar(' ');
-    aux = (int *) malloc(8 * sizeof(int));
-    aux = int2bin(aux, root->data);
-    for(int i = 7; i >= 0; i--){
-      printf("%d", aux[i]);
-      bits++;
-    }
-    free(aux);
-    putchar(' ');
-  }
+	if(!isLeaf(root)){
+		putchar('0');
+		bits++;
+		encode_tree(root->left);
+		encode_tree(root->right);
+	}else{
+		putchar('1');
+		bits++;
+		putchar(' ');
+		aux = (int *) malloc(8 * sizeof(int));
+		aux = int2bin(aux, root->data);
+		for(i = 7; i >= 0; i--){
+#ifndef MB
+			printf("%d", aux[i]);
+#else
+			xil_printf("%d", aux[i]);
+#endif
+			bits++;
+		}
+		free(aux);
+		putchar(' ');
+	}
 }
 
 void encode_text(char *file){
@@ -243,6 +251,13 @@ void HuffmanCodes(char data[], unsigned freq[], int size)
 	putchar('\n');
 	encode_tree(root);
 	//printf("\ntree_size = %u\n", tree_size);
+	puts("\r\n");
+#else
+	// Print Huffman codes using the Huffman tree built above
+	putchar('\n');
+	puts("--------------FILE OUT--------------");
+	putchar('\n');
+	encode_tree(root);
 	puts("\r\n");
 #endif
 
