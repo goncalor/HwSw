@@ -3,7 +3,7 @@
 
 #include "huffman_code.h"
 #include "misc.h"
-#include "microblaze.h"
+#include "define.h"
 
 // A utility function allocate a new min heap node with given character
 // and frequency of the character
@@ -139,6 +139,7 @@ MinHeapNode* buildHuffmanTree(char data[], unsigned freq[], int size)
 	// Step 1: Create a min heap of capacity equal to size.  Initially, there are
 	// modes equal to size.
 
+	bits = 0;
 	tree_size = 0;
 	MinHeap* minHeap = createAndBuildMinHeap(data, freq, size);
 
@@ -194,7 +195,7 @@ void printCodes(MinHeapNode* root, int arr[], int top, char a)
  * Encodes tree in header of FILE
  * @param root root of tree
  */
-void encode_tree(struct MinHeapNode* root){
+void encode_tree(MinHeapNode* root){
 	int * aux, i;
 
 	if(!isLeaf(root)){
@@ -231,34 +232,54 @@ void encode_text(char *file){
 		printCodes(root, arr, top, file[i]);
 		i++;
 	}
-	while(file[i] != 0); // this should be FILE_END_CODE
+	while(file[i] != FILE_END_CODE);
 
 	puts("EOF");
 }
 
-// The main function that builds a Huffman Tree and print codes by traversing
-// the built Huffman Tree
-void HuffmanCodes(char data[], unsigned freq[], int size)
+// Traverses the Huffman tree pointed to by root and prints the file header and body
+void HuffmanPrint(MinHeapNode* root, char *file)
 {
-	//  Construct Huffman Tree
-	MinHeapNode* root = buildHuffmanTree(data, freq, size);
-	bits = 0;
-
 #ifndef MB
-	// Print Huffman codes using the Huffman tree built above
-	putchar('\n');
-	puts("--------------FILE OUT--------------");
-	putchar('\n');
+	puts("\n--------------FILE OUT--------------\n");
 	encode_tree(root);
 	//printf("\ntree_size = %u\n", tree_size);
-	puts("\r\n");
+	puts("\n");
+	encode_text(file);
+	puts("");
 #else
 	// Print Huffman codes using the Huffman tree built above
-	putchar('\n');
-	puts("--------------FILE OUT--------------");
-	putchar('\n');
+	xil_printf("\n--------------FILE OUT--------------\n\n");
 	encode_tree(root);
-	puts("\r\n");
+	xil_printf("\n\n");
+	encode_text(file);
+	xil_printf("\n");
 #endif
+}
 
+
+// Each table record has two chars:
+// - the first char is the codeword
+// - the second char is the length of the codeword (in bits).
+// The first call should be with pos = 1 in normal usage.
+// The first call should be with code = 0 in normal usage.
+// The number 8 is used because that's the number of bits in a char.
+void tree_to_table(MinHeapNode* root, char *table, char code, short pos)
+{
+
+	if(root->left != NULL)
+		tree_to_table(root->left, table, code, pos+1);
+		//tree_to_table(root->left, table, code&~(1 << 8-pos), pos+1);
+
+	if(root->right != NULL)
+		tree_to_table(root->right, table, code|(1 << (8-pos)), pos+1);
+
+	if(isLeaf(root))
+	{
+#ifdef debug
+		printf("%d\t%d\t%d\n", root->data, code, pos-1);
+#endif
+		table[root->data << 2] = code;
+		table[(root->data << 2)+1] = pos-1;
+	}
 }

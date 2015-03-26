@@ -2,12 +2,11 @@
 #include <stdlib.h>
 
 #include "huffman_code.h"
-#include "microblaze.h"
+#include "define.h"
 
 //#define debug
 
 #define MAX_FILE_SIZE 7*1024*1024	// max 128 MB, external memory size
-#define FILE_END_CODE 0
 
 #ifndef MB
 char file[MAX_FILE_SIZE];
@@ -121,8 +120,13 @@ int main(int argc, char **argv)
 #endif
 #endif
 
-	HuffmanCodes(ascii, (unsigned *) &stats, size);
-	encode_text(file);
+	MinHeapNode* huffman_tree = buildHuffmanTree(ascii, (unsigned *) &stats, size);
+	HuffmanPrint(huffman_tree, file);
+
+	// let's reuse the stats array as a table for the codewords obtained from the tree
+	char *encoding_table = (char *) stats;
+	tree_to_table(huffman_tree, encoding_table, 0, 1);
+
 
 	// Print statistics of compression
 	puts("----------------STATS---------------");
