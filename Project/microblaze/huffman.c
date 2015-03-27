@@ -17,7 +17,7 @@ volatile char *file = (char *) (0xa8000000);
 unsigned stats[256];	// for 128 MB we might have 2^27 occurrences of a single character, hence uint32
 
 #ifndef MB
-void read_file(char *filepath)
+void read_file(char *filepath, char *file)
 {
 	FILE *fp;
 	int i = 0;
@@ -37,7 +37,23 @@ void read_file(char *filepath)
 		i++;
 	}
 
-	file[i] = FILE_END_CODE;	// place end of file code
+	file[i] = FILE_END_CODE;	// place end of file code, in case the file does not have it
+}
+
+void write_file(char *filepath, char *file, unsigned len)
+{
+	FILE *fp;
+	int i;
+
+	fp = fopen(filepath, "w");
+	if(fp == NULL)
+	{
+		puts("Failed to open output file.");
+		exit(EXIT_FAILURE);
+	}
+
+	for(i=0; i<len; i++)
+		fputc(file[i], fp);
 }
 #endif
 
@@ -57,7 +73,7 @@ void compute_stats()
 	}
 	while(file[i] != FILE_END_CODE);
 
-	//stats[FILE_END_CODE] = 1;	// end of file code appears once. possibly not needed
+	stats[FILE_END_CODE] = 1;	// end of file code appears once. possibly not needed
 }
 
 
@@ -73,7 +89,7 @@ int main(int argc, char **argv)
 		exit(EXIT_FAILURE);
 	}
 
-	read_file(argv[1]);
+	read_file(argv[1], file);
 	//puts(file);
 #endif
 
@@ -127,6 +143,12 @@ int main(int argc, char **argv)
 	char *encoding_table = (char *) stats;
 	tree_to_table(huffman_tree, encoding_table, 0, 1);
 
+	// encode the buffer
+	unsigned outbuf_len = encode_file(file, file, encoding_table);
+
+#ifndef MB
+	write_file("outfile231431.txt", file, outbuf_len);
+#endif
 
 	// Print statistics of compression
 	puts("----------------STATS---------------");
@@ -135,10 +157,10 @@ int main(int argc, char **argv)
 
 #ifndef MB
 	printf("\tSize of compressed file (bits): %d\n", bits);
-	printf("\tSize of compressed file (bytes): %d\n", (bits + 4)/8);
+	printf("\tSize of compressed file (bytes): %u (without header)\n", outbuf_len);
 #else
 	xil_printf("\tSize of compressed file (bits): %d\n", bits);
-	xil_printf("\tSize of compressed file (bytes): %d\n", (bits + 4)/8);
+	xil_printf("\tSize of compressed file (bytes): %u (without header)\n", outbuf_len);
 #endif
 	return 0;
 }
