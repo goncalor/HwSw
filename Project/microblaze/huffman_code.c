@@ -108,7 +108,11 @@ void printArr(int arr[], int n)
 #endif
 		bits++;
 	}
+#ifndef MB
 	putchar(' ');
+#else
+	xil_printf(" ");
+#endif
 }
 
 // Utility function to check if this node is leaf
@@ -196,29 +200,52 @@ void printCodes(MinHeapNode* root, int arr[], int top, char a)
  * @param root root of tree
  */
 void encode_tree(MinHeapNode* root){
-	int * aux, i;
+	int i;
+	int bin[8];
 
 	if(!isLeaf(root)){
+#ifndef MB
 		putchar('0');
+#else
+		xil_printf("0");
+#endif
 		bits++;
 		encode_tree(root->left);
 		encode_tree(root->right);
 	}else{
-		putchar('1');
 		bits++;
+#ifndef MB
+		putchar('1');
 		putchar(' ');
-		aux = (int *) malloc(8 * sizeof(int));
-		aux = int2bin(aux, root->data);
+#else
+		xil_printf("1");
+		xil_printf(" ");
+#endif
+
+		  int tmp = root->data;
+
+		  for(i = 0; i < 8; i++)
+		    bin[i] = 0;
+
+		  for(i = 0; i < 8 || tmp != 0; i++){
+		    bin[i] = tmp % 2;
+		    tmp = tmp / 2;
+		  }
+
+		//aux = int2bin(aux, root->data);
 		for(i = 7; i >= 0; i--){
 #ifndef MB
-			printf("%d", aux[i]);
+			printf("%d", bin[i]);
 #else
-			xil_printf("%d", aux[i]);
+			xil_printf("%d", bin[i]);
 #endif
 			bits++;
 		}
-		free(aux);
+#ifndef MB
 		putchar(' ');
+#else
+		xil_printf(" ");
+#endif
 	}
 }
 

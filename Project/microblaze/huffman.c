@@ -4,15 +4,8 @@
 #include "huffman_code.h"
 #include "define.h"
 
-//#define debug
-
 #define MAX_FILE_SIZE 7*1024*1024	// max 128 MB, external memory size
 
-#ifndef MB
-char file[MAX_FILE_SIZE];
-#else
-volatile char *file = (char *) (0xa8000000);
-#endif
 
 unsigned stats[256];	// for 128 MB we might have 2^27 occurrences of a single character, hence uint32
 
@@ -57,7 +50,7 @@ void write_file(char *filepath, char *file, unsigned len)
 }
 #endif
 
-void compute_stats()
+void compute_stats(char *file)
 {
 	int i;
 
@@ -83,6 +76,13 @@ int main(int argc, char **argv)
 	char ascii[256];
 
 #ifndef MB
+	char file[MAX_FILE_SIZE];
+#else
+	char *file = (char *) (0xa8f00000);
+#endif
+
+
+#ifndef MB
 	if(argc != 2)
 	{
 		printf("Usage: %s file\n", argv[0]);
@@ -93,8 +93,8 @@ int main(int argc, char **argv)
 	//puts(file);
 #endif
 
-	file[MAX_FILE_SIZE-1] = FILE_END_CODE;	// place end of file code. to be sage
-	compute_stats();
+	file[MAX_FILE_SIZE-1] = FILE_END_CODE;	// place end of file code. to be safe
+	compute_stats((char *) file);
 
 #ifdef debug
 #ifndef MB
@@ -137,14 +137,14 @@ int main(int argc, char **argv)
 #endif
 
 	MinHeapNode* huffman_tree = buildHuffmanTree(ascii, (unsigned *) &stats, size);
-	HuffmanPrint(huffman_tree, file);
+	HuffmanPrint(huffman_tree, (char *)file);
 
 	// let's reuse the stats array as a table for the codewords obtained from the tree
 	char *encoding_table = (char *) stats;
 	tree_to_table(huffman_tree, encoding_table, 0, 1);
 
 	// encode the buffer
-	unsigned outbuf_len = encode_file(file, file, encoding_table);
+	unsigned outbuf_len = encode_file((char *)file, (char *)file, encoding_table);
 
 #ifndef MB
 	write_file("outfile231431.txt", file, outbuf_len);
@@ -160,7 +160,7 @@ int main(int argc, char **argv)
 	printf("\tSize of compressed file (bytes): %u (without header)\n", outbuf_len);
 #else
 	xil_printf("\tSize of compressed file (bits): %d\n", bits);
-	xil_printf("\tSize of compressed file (bytes): %u (without header)\n", outbuf_len);
+	xil_printf("\tSize of compressed file (bytes): %d (without header)\n", outbuf_len);
 #endif
 	return 0;
 }
