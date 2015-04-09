@@ -3,10 +3,13 @@
 
 #include "huffman_code.h"
 #include "define.h"
+#include "file.h"
+
+#ifdef MB
 #include "htimer.h"
+#endif
 
 #define MAX_FILE_SIZE 7*1024*1024	// max 128 MB, external memory size
-
 
 unsigned stats[256];	// for 128 MB we might have 2^27 occurrences of a single character, hence uint32
 
@@ -75,15 +78,14 @@ int main(int argc, char **argv)
 {
 	int i, j;
 	char ascii[256];
-	u32 timeL, timeH;
-
-	init_timer(1);
-	start_timer(1);
 
 #ifndef MB
 	char file[MAX_FILE_SIZE];
 #else
 	char *file = (char *) (0xa8f00000);
+	u32 timeL, timeH;
+	init_timer(1);
+	start_timer(1);
 #endif
 
 
@@ -174,7 +176,7 @@ int main(int argc, char **argv)
 
 #ifndef MB
 	write_file("outfile231431.txt", file, outbuf_len);
-#endif
+#else
 
 	//timeH = get_timer64_val(&timeL);
 
@@ -190,6 +192,8 @@ int main(int argc, char **argv)
 	xil_printf("finish encode_file(): %d ms\n", (int) conv2_cycles_to_msecs(timeH, timeL));
 	xil_printf("time elapsed: %d ms\n", (int) conv2_cycles_to_msecs(timeH, timeL));
 */
+#endif
+
 	// Print statistics of compression
 	puts("----------------STATS---------------");
 	putchar('\n');
