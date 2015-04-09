@@ -3,6 +3,7 @@
 
 #include "huffman_code.h"
 #include "define.h"
+#include "htimer.h"
 
 #define MAX_FILE_SIZE 7*1024*1024	// max 128 MB, external memory size
 
@@ -74,6 +75,10 @@ int main(int argc, char **argv)
 {
 	int i, j;
 	char ascii[256];
+	u32 timeL, timeH;
+
+	init_timer(1);
+	start_timer(1);
 
 #ifndef MB
 	char file[MAX_FILE_SIZE];
@@ -93,8 +98,12 @@ int main(int argc, char **argv)
 	//puts(file);
 #endif
 
+//	timeH = get_timer64_val(&timeL);
+
 	file[MAX_FILE_SIZE-1] = FILE_END_CODE;	// place end of file code. to be safe
 	compute_stats((char *) file);
+
+//	timeH = get_timer64_val(&timeL);
 
 #ifdef debug
 #ifndef MB
@@ -136,20 +145,51 @@ int main(int argc, char **argv)
 #endif
 #endif
 
+	//timeH = get_timer64_val(&timeL);
+
 	MinHeapNode* huffman_tree = buildHuffmanTree(ascii, (unsigned *) &stats, size);
+
+	//timeH = get_timer64_val(&timeL);
+
+	//timeH = get_timer64_val(&timeL);
+
 	HuffmanPrint(huffman_tree, (char *)file);
+
+	//timeH = get_timer64_val(&timeL);
+
+	//timeH = get_timer64_val(&timeL);
 
 	// let's reuse the stats array as a table for the codewords obtained from the tree
 	char *encoding_table = (char *) stats;
 	tree_to_table(huffman_tree, encoding_table, 0, 1);
 
+	//timeH = get_timer64_val(&timeL);
+
+	//timeH = get_timer64_val(&timeL);
+
 	// encode the buffer
 	unsigned outbuf_len = encode_file((char *)file, (char *)file, encoding_table);
+
+	//timeH = get_timer64_val(&timeL);
 
 #ifndef MB
 	write_file("outfile231431.txt", file, outbuf_len);
 #endif
 
+	//timeH = get_timer64_val(&timeL);
+
+	xil_printf("start compute_stats(): %d ms\n", (int) conv2_cycles_to_msecs(timeH, timeL));
+/*	xil_printf("finish compute_stats(): %d ms\n", (int) conv2_cycles_to_msecs(timeH, timeL));
+	xil_printf("start buildHuffmanTree(): %d ms\n", (int) conv2_cycles_to_msecs(timeH, timeL));
+	xil_printf("finish buildHuffmanTree(): %d ms\n", (int) conv2_cycles_to_msecs(timeH, timeL));
+	xil_printf("start HuffmanPrint(): %d ms\n", (int) conv2_cycles_to_msecs(timeH, timeL));
+	xil_printf("finish HuffmanPrint(): %d ms\n", (int) conv2_cycles_to_msecs(timeH, timeL));
+	xil_printf("start tree_to_table(): %d ms\n", (int) conv2_cycles_to_msecs(timeH, timeL));
+	xil_printf("finish tree_to_table(): %d ms\n", (int) conv2_cycles_to_msecs(timeH, timeL));
+	xil_printf("start encode_file(): %d ms\n", (int) conv2_cycles_to_msecs(timeH, timeL));
+	xil_printf("finish encode_file(): %d ms\n", (int) conv2_cycles_to_msecs(timeH, timeL));
+	xil_printf("time elapsed: %d ms\n", (int) conv2_cycles_to_msecs(timeH, timeL));
+*/
 	// Print statistics of compression
 	puts("----------------STATS---------------");
 	putchar('\n');
