@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "huffman_code.h"
 #include "define.h"
@@ -15,6 +16,7 @@ int main(int argc, char **argv){
 
 #ifndef MB
 	char * file = malloc(MAX_FILE_SIZE*sizeof(char));
+	char * out;
 #else
 	char *file = (char *) (0xa8f00000);
 	u32 timeL, timeH;
@@ -89,7 +91,7 @@ int main(int argc, char **argv){
 
 	//timeH = get_timer64_val(&timeL);
 
-	HuffmanPrint(huffman_tree, (char *)file);
+	//HuffmanPrint(huffman_tree, (char *)file);
 
 	//timeH = get_timer64_val(&timeL);
 
@@ -109,7 +111,8 @@ int main(int argc, char **argv){
 	//timeH = get_timer64_val(&timeL);
 
 #ifndef MB
-	write_file("outfile231431.txt", file, outbuf_len);
+	out = strcat(argv[1], "_comp");
+	write_file(out, file, outbuf_len);
 #else
 
 	//timeH = get_timer64_val(&timeL);
