@@ -1,7 +1,7 @@
 # Times
 Huffamn Print medido sem xil_printf de maneira a ter uma medida mais realista. Os resultados não devem ser escritos para o `stdout` mas sim para um ficheiro de saída, que neste caso é um espaço de memória dentro da memória externa.
 
-## Resultados
+## Resultados (sem Aceleração)
 - tmp -> Total Time:  ms
   + Compute Stats   -> 
   + Build Tree      ->
