@@ -1,2 +1,5 @@
 *.pdf
 huffman
+*.sublime*
+*.plist
+outfile*
