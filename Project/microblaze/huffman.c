@@ -14,7 +14,7 @@ int main(int argc, char **argv){
 	char ascii[256];
 
 #ifndef MB
-	char file[MAX_FILE_SIZE];
+	char * file = malloc(MAX_FILE_SIZE*sizeof(char));
 #else
 	char *file = (char *) (0xa8f00000);
 	u32 timeL, timeH;
