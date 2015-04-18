@@ -1,5 +1,6 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.std_logic_arith.all;
 use IEEE.STD_LOGIC_UNSIGNED.ALL;
 
 entity fsm is
@@ -9,7 +10,7 @@ entity fsm is
 			rst	: in std_logic;
 
 			-- Output
-			sel_word : out std_logic_vector(1 downto 0);
+			sel_word : out std_logic_vector(1 downto 0)
 			);
 end fsm;
 
@@ -17,8 +18,8 @@ architecture Behavioral of fsm is
 ---------------- Auxilliary Variables ----------------
 	type fsm_states is (s_initial, s_write_char, s_end);
 	signal currstate, nextstate: fsm_states;
-	integer count;
-	integer max_words := 4;
+	signal count : integer;
+	constant max_words : integer := 4;
 
 begin
 --------------- Initialize Machine ------------------
@@ -32,20 +33,20 @@ begin
 	end process ; -- state_reg
 
 ----------------- Machine States --------------------
-	state_comb : process(currstate)
+	state_comb : process(currstate, count)
 	begin
 		nextstate <= currstate;
-		count := 0;
+		count <= 0;
 
 		case(currstate) is
 			------- Initial State -------------
 			when s_initial => -- Initial State
-				if count != max_words then
+				if count /= max_words then
 					nextstate <= s_write_char;
-					count := count + 1;
+					count <= count + 1;
 				else
 					nextstate <= s_end;
-					count := 0;
+					count <= 0;
 				end if;
 
 			------- Write Char to Memory ------
