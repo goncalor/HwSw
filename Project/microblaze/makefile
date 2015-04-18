@@ -1,6 +1,6 @@
 
 huffman: clean
-	gcc -Wall huffman.c huffman_code.c misc.c file.c -o huffman -g
+	gcc -Wall Sw/huffman.c Sw/huffman_code.c Sw/misc.c Sw/file.c -o huffman -g
 
 .PHONY: clean
 clean:
