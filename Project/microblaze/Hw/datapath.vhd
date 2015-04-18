@@ -6,12 +6,12 @@ entity datapath is
 				-- Input
 				word					: in std_logic_vector(31 downto 0);
 				sel_word			: in std_logic_vector(1 downto 0);
-				char_count_in	: in std_logic_vector(7 downto 0);
+				char_count_in	: in std_logic_vector(15 downto 0);
 
 				-- Output
 				addr_write			: out std_logic_vector(7 downto 0);
 				addr_read				: out std_logic_vector(7 downto 0);
-				char_count_out	: out std_logic_vector(7 downto 0);
+				char_count_out	: out std_logic_vector(15 downto 0);
 			);
 end datapath;
 
