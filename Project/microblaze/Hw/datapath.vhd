@@ -33,9 +33,10 @@ architecture Behavioral of datapath is
 	end component;
 
 	---------------- Auxilliary Signals ----------------
-	signal char : std_logic_vector(7 downto 0) := (others => '0');
+	signal char : std_logic_vector(7 downto 0);
 	signal bram_out : std_logic_vector(15 downto 0);
 	signal adder_out : std_logic_vector(15 downto 0);
+	signal reg_out : std_logic_vector(7 downto 0); 
 
 begin
 
@@ -48,7 +49,7 @@ begin
 		clk => clk,
 		we => we,
 		read_addr => char,
-		write_addr => char,
+		write_addr => reg_out,
 		data_in => adder_out,
 		data_out => bram_out
 	);
@@ -62,6 +63,14 @@ begin
 	------------------------ Add -----------------------
 	-- Increments word count
 	adder_out <= bram_out + 1;
+
+	--------------------- Register ---------------------
+	process(clk)
+	begin
+		if clk'event and clk='0' then
+			reg_out <= char;
+		end if;
+	end process;
 
 	----------------------- Exit -----------------------
 	count_out <= bram_out;

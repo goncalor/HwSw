@@ -68,7 +68,7 @@ BEGIN
 		-- insert stimulus here 
 
 		we <= '1',
-			'0' after 12*clk_period; -- perform reads only, to check values
+			'0' after 13*clk_period; -- perform reads only, to check values
 
 		word <= x"03020100",
 			x"07060504" after 4*clk_period,
