@@ -23,7 +23,7 @@ end BRAM;
 architecture Behavioral of BRAM is
 	type MEM_TYPE is array (0 to (2**ADDR_WIDTH)-1) of STD_LOGIC_VECTOR(DATA_WIDTH - 1 downto 0);
 
-	signal mem : MEM_TYPE := (others => (others => '0'));
+	signal mem : MEM_TYPE := (others => X"0000");
 
 begin
 
