@@ -6,35 +6,64 @@ use IEEE.STD_LOGIC_UNSIGNED.ALL;
 entity datapath is
 	port(
 		-- Input
+		clk : in std_logic;
 		word : in std_logic_vector(31 downto 0);
-		sel_word : in std_logic_vector(1 downto 0);
-		char_count_in : in std_logic_vector(15 downto 0);
-
+		sel_char : in std_logic_vector(1 downto 0);
+		we : in std_logic;
 		-- Output
-		addr_write : out std_logic_vector(7 downto 0);
-		addr_read : out std_logic_vector(7 downto 0);
-		char_count_out : out std_logic_vector(15 downto 0)
-);
+		count_out : out std_logic_vector(15 downto 0)
+	);
 end datapath;
 
 architecture Behavioral of datapath is
-	---------------- Auxilliary Variables --------------
+
+	component BRAM
+		generic(
+		ADDR_WIDTH : integer;
+		DATA_WIDTH : integer
+	);
+	port(
+		clk : in std_logic;
+		we : in std_logic;
+		read_addr : in std_logic_vector(7 downto 0);
+		write_addr : in std_logic_vector(7 downto 0);
+		data_in : in std_logic_vector(15 downto 0);          
+		data_out : out std_logic_vector(15 downto 0)
+	);
+	end component;
+
+	---------------- Auxilliary Signals ----------------
 	signal char : std_logic_vector(7 downto 0) := (others => '0');
+	signal bram_out : std_logic_vector(15 downto 0);
+	signal adder_out : std_logic_vector(15 downto 0);
 
 begin
 
+	Inst_BRAM : BRAM 
+	generic map (
+		ADDR_WIDTH => 8,
+		DATA_WIDTH => 16
+	)
+	port map(
+		clk => clk,
+		we => we,
+		read_addr => char,
+		write_addr => char,
+		data_in => adder_out,
+		data_out => bram_out
+	);
+
 	------------------- Select Word --------------------
-	char <= word(7 downto 0) when sel_word = "00" else
-		word(15 downto 8) when sel_word = "01" else
-		word(23 downto 16) when sel_word = "10" else
+	char <= word(7 downto 0) when sel_char = "00" else
+		word(15 downto 8) when sel_char = "01" else
+		word(23 downto 16) when sel_char = "10" else
 		word(31 downto 24);
 
 	------------------------ Add -----------------------
 	-- Increments word count
-	char_count_out <= char_count_in + 1;
+	adder_out <= bram_out + 1;
 
 	----------------------- Exit -----------------------
-	addr_read <= char;
-	addr_write <= char;
+	count_out <= bram_out;
 
 end Behavioral;

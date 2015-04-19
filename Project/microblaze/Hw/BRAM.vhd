@@ -6,24 +6,24 @@ entity BRAM is
 	Generic(
 		ADDR_WIDTH : integer := 8;
 		DATA_WIDTH : integer := 16
-);
+	);
 
-port(
-	-- Input
-	clk : in std_logic;
-	we : in std_logic;
-	addr : in std_logic_vector(ADDR_WIDTH - 1 downto 0);
-	data_in	: in std_logic_vector(DATA_WIDTH - 1 downto 0);
-	-- Output
-	data_out : out std_logic_vector(DATA_WIDTH - 1 downto 0)
-);
-	end BRAM;
+	port(
+		-- Input
+		clk : in std_logic;
+		we : in std_logic;
+		read_addr : in std_logic_vector(ADDR_WIDTH - 1 downto 0);
+		write_addr : in std_logic_vector(ADDR_WIDTH - 1 downto 0);
+		data_in	: in std_logic_vector(DATA_WIDTH - 1 downto 0);
+		-- Output
+		data_out : out std_logic_vector(DATA_WIDTH - 1 downto 0)
+	);
+end BRAM;
 
 architecture Behavioral of BRAM is
 	type MEM_TYPE is array (0 to (2**ADDR_WIDTH)-1) of STD_LOGIC_VECTOR(DATA_WIDTH - 1 downto 0);
-	constant InitValue : MEM_TYPE := (others => X"0000");
 
-	shared variable mem : MEM_TYPE := InitValue;
+	signal mem : MEM_TYPE := (others => (others => '0'));
 
 begin
 
@@ -33,13 +33,13 @@ begin
 	begin
 		if clk'event and clk = '1' then
 			if we = '1' then
-				mem(conv_integer(addr)) := data_in;
+				mem(conv_integer(write_addr)) <= data_in;
 			end if ;
 		end if ;
 	end process ; -- Write_Mem
 
 	-------------------- Reading -----------------------
 	-- Reading is asynchronous
-	data_out <= mem(conv_integer(addr));
+	data_out <= mem(conv_integer(read_addr));
 
 end Behavioral;
