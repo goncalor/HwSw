@@ -19,6 +19,7 @@ ARCHITECTURE behavior OF datapath_tb IS
 			word : IN  std_logic_vector(31 downto 0);
 			sel_char : IN  std_logic_vector(1 downto 0);
 			we : IN  std_logic;
+			comp_en : IN  std_logic;
 			count_out : OUT  std_logic_vector(15 downto 0)
 		);
 	END COMPONENT;
@@ -29,6 +30,7 @@ ARCHITECTURE behavior OF datapath_tb IS
 	signal word : std_logic_vector(31 downto 0) := (others => '0');
 	signal sel_char : std_logic_vector(1 downto 0) := (others => '0');
 	signal we : std_logic := '0';
+	signal comp_en : std_logic := '0';
 
 	--Outputs
 	signal count_out : std_logic_vector(15 downto 0);
@@ -44,6 +46,7 @@ BEGIN
 		word => word,
 		sel_char => sel_char,
 		we => we,
+		comp_en => comp_en,
 		count_out => count_out
 	);
 
@@ -69,6 +72,9 @@ BEGIN
 
 		we <= '1',
 			'0' after 13*clk_period; -- perform reads only, to check values
+
+		comp_en <= '0',
+			'1' after 1*clk_period;
 
 		word <= x"03020100",
 			x"07060504" after 4*clk_period,

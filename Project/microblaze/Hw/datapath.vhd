@@ -10,6 +10,7 @@ entity datapath is
 		word : in std_logic_vector(31 downto 0);
 		sel_char : in std_logic_vector(1 downto 0);
 		we : in std_logic;
+		comp_en : in std_logic;
 		-- Output
 		count_out : out std_logic_vector(15 downto 0)
 	);
@@ -34,9 +35,12 @@ architecture Behavioral of datapath is
 
 	---------------- Auxilliary Signals ----------------
 	signal char : std_logic_vector(7 downto 0);
+	signal prev_char : std_logic_vector(7 downto 0);
 	signal bram_out : std_logic_vector(15 downto 0);
 	signal adder_out : std_logic_vector(15 downto 0);
-	signal reg_out : std_logic_vector(7 downto 0); 
+	signal adder_in : std_logic_vector(15 downto 0);
+	signal prev_count : std_logic_vector(15 downto 0);
+	signal prev_we : std_logic;
 
 begin
 
@@ -47,10 +51,10 @@ begin
 	)
 	port map(
 		clk => clk,
-		we => we,
+		we => prev_we,
 		read_addr => char,
-		write_addr => reg_out,
-		data_in => adder_out,
+		write_addr => prev_char,
+		data_in => prev_count,
 		data_out => bram_out
 	);
 
@@ -60,15 +64,19 @@ begin
 		word(23 downto 16) when sel_char = "10" else
 		word(31 downto 24);
 
-	------------------------ Add -----------------------
+	---------------------- Adder -----------------------
+	-- Mux and comparator
+	adder_in <= bram_out when (char /= prev_char or comp_en = '0') else prev_count;
 	-- Increments word count
-	adder_out <= bram_out + 1;
+	adder_out <= adder_in + 1;
 
-	--------------------- Register ---------------------
+	-------------------- Registers ---------------------
 	process(clk)
 	begin
-		if clk'event and clk='0' then
-			reg_out <= char;
+		if clk'event and clk='1' then
+			prev_char <= char;
+			prev_count <= adder_out;
+			prev_we <= we;
 		end if;
 	end process;
 
