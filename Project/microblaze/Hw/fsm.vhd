@@ -21,7 +21,7 @@ end fsm;
 
 architecture Behavioral of fsm is
 ---------------- Auxilliary Variables ----------------
-	type fsm_states is (s_initial, s_write_char_1, s_write_char_2, s_write_char_3, s_write_char_4, s_read_char_1, s_read_char_2, s_end);
+	type fsm_states is (s_initial, s_write_char_1, s_write_char_2, s_write_char_3, s_write_char_4, s_read_char, s_end);
 	signal currstate, nextstate: fsm_states;
 	signal read_count : std_logic_vector(7 downto 0);
 
@@ -57,7 +57,7 @@ begin
 					comp_en <= '0';
 					sel_word <= "00";
 				elsif RW = '1' then
-					nextstate <= s_read_char_1;
+					nextstate <= s_read_char;
 					read_count <= X"00";
 					we <= '0';
 					comp_en <= '0';
@@ -90,17 +90,10 @@ begin
 				nextstate <= s_end;
 
 			------ Read char from BRAM ------
-			when s_read_char_1 =>
+			when s_read_char =>
 				addr <= read_count;
 				if clk'event and clk = '1' then
-					read_count <= read_count + 1;
-				end if ;
-				nextstate <= s_write_char_2;
-
-			when s_read_char_2 =>
-				addr <= read_count;
-				if clk'event and clk = '1' then
-					read_count <= read_count + 1;
+					read_count <= read_count + 2;
 				end if ;
 				nextstate <= s_end;
 
