@@ -13,13 +13,13 @@ entity BRAM is
 		clk        : in std_logic;
 		we         : in std_logic;
 		read_addr  : in std_logic_vector(ADDR_WIDTH - 1 downto 0);
-		--read_addr2 : in std_logic_vector(ADDR_WIDTH - 1 downto 0);
+		read_addr2 : in std_logic_vector(ADDR_WIDTH - 1 downto 0);
 		write_addr : in std_logic_vector(ADDR_WIDTH - 1 downto 0);
 		data_in	   : in std_logic_vector(DATA_WIDTH - 1 downto 0);
 
 		-- Output
-		data_out  : out std_logic_vector(DATA_WIDTH - 1 downto 0)
-		--data_out2 : out std_logic_vector(DATA_WIDTH - 1 downto 0)
+		data_out  : out std_logic_vector(DATA_WIDTH - 1 downto 0);
+		data_out2 : out std_logic_vector(DATA_WIDTH - 1 downto 0)
 	);
 end BRAM;
 
@@ -44,6 +44,6 @@ begin
 	-------------------- Reading -----------------------
 	-- Reading is asynchronous
 	data_out <= mem(conv_integer(read_addr));
-	--data_out2 <= mem(conv_integer(read_addr2));
+	data_out2 <= mem(conv_integer(read_addr2));
 
 end Behavioral;

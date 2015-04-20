@@ -55,7 +55,8 @@ architecture Behavioral of circuito is
 			comp_en  : in std_logic;
 
 			-- Output
-			count_out : out std_logic_vector(15 downto 0)
+			count_out : out std_logic_vector(15 downto 0);
+			count_out2 : out std_logic_vector(15 downto 0)
 		);
 	end component;
 
@@ -91,7 +92,8 @@ Inst_datapath : datapath
 		comp_en  => comp_en_aux,
 
 		-- Output
-		count_out => FSL_M_Data(0 to 15) -- lixo
+		count_out => FSL_M_Data(0 to 15),
+		count_out2 => FSL_M_Data(16 to 31)
 	);
 
 Inst_fsm : fsm

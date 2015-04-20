@@ -12,7 +12,8 @@ entity datapath is
 		we       : in std_logic;
 		comp_en  : in std_logic;
 		-- Output
-		count_out : out std_logic_vector(15 downto 0)
+		count_out : out std_logic_vector(15 downto 0);
+		count_out2 : out std_logic_vector(15 downto 0)
 	);
 end datapath;
 
@@ -27,14 +28,17 @@ architecture Behavioral of datapath is
 		clk        : in std_logic;
 		we         : in std_logic;
 		read_addr  : in std_logic_vector(7 downto 0);
+		read_addr2 : in std_logic_vector(7 downto 0);
 		write_addr : in std_logic_vector(7 downto 0);
 		data_in    : in std_logic_vector(15 downto 0);
-		data_out   : out std_logic_vector(15 downto 0)
+		data_out   : out std_logic_vector(15 downto 0);
+		data_out2  : out std_logic_vector(15 downto 0)
 	);
 	end component;
 
 	---------------- Auxilliary Signals ----------------
 	signal char       : std_logic_vector(7 downto 0);
+	signal char2      : std_logic_vector(7 downto 0);
 	signal prev_char  : std_logic_vector(7 downto 0);
 	signal bram_out   : std_logic_vector(15 downto 0);
 	signal adder_out  : std_logic_vector(15 downto 0);
@@ -53,10 +57,14 @@ begin
 		clk => clk,
 		we => prev_we,
 		read_addr => char,
+		read_addr2 => char2,
 		write_addr => prev_char,
 		data_in => prev_count,
-		data_out => bram_out
+		data_out => bram_out,
+		data_out2 => count_out2 
 	);
+
+	char2 <= char xor x"01";
 
 	------------------- Select Word --------------------
 	char <= word(7 downto 0) when sel_char = "00" else
@@ -80,7 +88,8 @@ begin
 		end if;
 	end process;
 
-	----------------------- Exit -----------------------
+	--------------------- Output -----------------------
 	count_out <= bram_out;
+	-- count_out2 is also an output
 
 end Behavioral;
