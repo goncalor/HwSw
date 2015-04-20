@@ -65,11 +65,13 @@ architecture Behavioral of circuito is
 			clk	  : in std_logic;
 			rst	  : in std_logic;
 			start : in std_logic;
+			RW    : in std_logic;
 
 			-- Output
 			sel_word : out std_logic_vector(1 downto 0);
 			we       : out std_logic;
-			comp_en  : out std_logic
+			comp_en  : out std_logic;
+			addr     : out std_logic_vector(7 downto 0)
 			);
 	end component;
 
@@ -82,11 +84,11 @@ begin
 Inst_datapath : datapath
 	port map(
 		-- Input
-		clk => FSL_Clk,
-		word => FSL_S_Data,
+		clk      => FSL_Clk,
+		word     => FSL_S_Data,
 		sel_char => sel_word_aux, -- vem da máquinda de estados
-		we => we_aux, -- vem da máquina de estados
-		comp_en => comp_en_aux,
+		we       => we_aux, -- vem da máquina de estados
+		comp_en  => comp_en_aux,
 
 		-- Output
 		count_out => FSL_M_Data(0 to 15) -- lixo
@@ -95,14 +97,16 @@ Inst_datapath : datapath
 Inst_fsm : fsm
 	port map(
 		-- Input
-		clk => FSL_Clk,
-		rst => FSL_Rst, -- vem da fsl
-		start => FSL_S_Exists,
+		clk   => FSL_Clk, -- vem da fsl
+		rst   => FSL_Rst, -- vem da fsl
+		start => FSL_S_Exists, -- vem da fsl
+		RW    => FSL_S_Control,
 
 		-- Output
 		sel_word => sel_word_aux, -- liga a sel_char da datapath
-		we => we_aux, -- liga a we da datapath
-		comp_en => comp_en_aux -- liga a comp_en da datapath
+		we       => we_aux, -- liga a we da datapath
+		comp_en  => comp_en_aux, -- liga a comp_en da datapath
+		addr     => open -- liga isto à BRAM para retirar o endereço
 	);
 
 end Behavioral; -- Behavioral

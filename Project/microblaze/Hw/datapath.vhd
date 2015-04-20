@@ -6,11 +6,11 @@ use IEEE.STD_LOGIC_UNSIGNED.ALL;
 entity datapath is
 	port(
 		-- Input
-		clk : in std_logic;
-		word : in std_logic_vector(31 downto 0);
+		clk      : in std_logic;
+		word     : in std_logic_vector(31 downto 0);
 		sel_char : in std_logic_vector(1 downto 0);
-		we : in std_logic;
-		comp_en : in std_logic;
+		we       : in std_logic;
+		comp_en  : in std_logic;
 		-- Output
 		count_out : out std_logic_vector(15 downto 0)
 	);
@@ -24,27 +24,27 @@ architecture Behavioral of datapath is
 		DATA_WIDTH : integer
 	);
 	port(
-		clk : in std_logic;
-		we : in std_logic;
-		read_addr : in std_logic_vector(7 downto 0);
+		clk        : in std_logic;
+		we         : in std_logic;
+		read_addr  : in std_logic_vector(7 downto 0);
 		write_addr : in std_logic_vector(7 downto 0);
-		data_in : in std_logic_vector(15 downto 0);          
-		data_out : out std_logic_vector(15 downto 0)
+		data_in    : in std_logic_vector(15 downto 0);
+		data_out   : out std_logic_vector(15 downto 0)
 	);
 	end component;
 
 	---------------- Auxilliary Signals ----------------
-	signal char : std_logic_vector(7 downto 0);
-	signal prev_char : std_logic_vector(7 downto 0);
-	signal bram_out : std_logic_vector(15 downto 0);
-	signal adder_out : std_logic_vector(15 downto 0);
-	signal adder_in : std_logic_vector(15 downto 0);
+	signal char       : std_logic_vector(7 downto 0);
+	signal prev_char  : std_logic_vector(7 downto 0);
+	signal bram_out   : std_logic_vector(15 downto 0);
+	signal adder_out  : std_logic_vector(15 downto 0);
+	signal adder_in   : std_logic_vector(15 downto 0);
 	signal prev_count : std_logic_vector(15 downto 0);
-	signal prev_we : std_logic;
+	signal prev_we    : std_logic;
 
 begin
 
-	Inst_BRAM : BRAM 
+	Inst_BRAM : BRAM
 	generic map (
 		ADDR_WIDTH => 8,
 		DATA_WIDTH => 16
