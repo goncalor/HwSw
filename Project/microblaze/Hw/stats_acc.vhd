@@ -117,6 +117,7 @@ begin
 		report_counter <= (others => '0');
 		FSL_S_Read <= '0';
 		FSL_M_Write <= '0';
+		FSL_M_Control <= '0';
 
 		case(currstate) is
 			------- Initial State -------------
@@ -143,6 +144,7 @@ begin
 				FSL_S_Read <= '1';
 				if end_count = '1' then
 					nextstate <= s_report;
+					FSL_M_Control <= '1';
 				else
 					nextstate <= s_count_2;
 				end if;
@@ -154,6 +156,7 @@ begin
 				FSL_S_Read <= '1';
 				if end_count = '1' then
 					nextstate <= s_report;
+					FSL_M_Control <= '1';
 				else
 					nextstate <= s_count_2;
 				end if;
@@ -165,6 +168,7 @@ begin
 				FSL_S_Read <= '1';
 				if end_count = '1' then
 					nextstate <= s_report;
+					FSL_M_Control <= '1';
 				else
 					nextstate <= s_count_3;
 				end if;
@@ -176,6 +180,7 @@ begin
 				FSL_S_Read <= '1';
 				if end_count = '1' then
 					nextstate <= s_report;
+					FSL_M_Control <= '1';
 				else
 					nextstate <= s_count_4;
 				end if;
@@ -187,6 +192,7 @@ begin
 				FSL_S_Read <= '1';
 				if end_count = '1' then
 					nextstate <= s_report;
+					FSL_M_Control <= '1';
 				else
 					nextstate <= s_count_1;
 				end if;
