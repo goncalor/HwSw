@@ -13,7 +13,8 @@ entity datapath is
 		comp_en  : in std_logic;
 		-- Output
 		count_out : out std_logic_vector(15 downto 0);
-		count_out2 : out std_logic_vector(15 downto 0)
+		count_out2 : out std_logic_vector(15 downto 0);
+		curr_char : out std_logic_vector(7 downto 0)
 	);
 end datapath;
 
@@ -89,6 +90,7 @@ begin
 	end process;
 
 	--------------------- Output -----------------------
+	curr_char <= char;
 	count_out <= bram_out;
 	-- count_out2 is also an output
 
