@@ -57,9 +57,9 @@ architecture Behavioral of stats_acc is
 			comp_en  : in std_logic;
 
 			-- Output
-			count_out : out std_logic_vector(15 downto 0);
+			count_out  : out std_logic_vector(15 downto 0);
 			count_out2 : out std_logic_vector(15 downto 0);
-			curr_char : out std_logic_vector(7 downto 0)
+			curr_char  : out std_logic_vector(7 downto 0)
 		);
 	end component;
 
@@ -67,16 +67,16 @@ architecture Behavioral of stats_acc is
 	type fsm_states is (s_initial, s_save_END, s_count_1_special, s_count_1, s_count_2, s_count_3, s_count_4, s_report, s_end);
 	signal currstate, nextstate: fsm_states;
 
-	signal word : std_logic_vector(31 downto 0);
-	signal sel_word : std_logic_vector(1 downto 0);
-	signal we : std_logic;
-	signal comp_en : std_logic;
+	signal word      : std_logic_vector(31 downto 0);
+	signal sel_word  : std_logic_vector(1 downto 0);
+	signal we        : std_logic;
+	signal comp_en   : std_logic;
 	signal curr_char : std_logic_vector(7 downto 0);
 
-	signal char_END : std_logic_vector(7 downto 0);
-	signal report_counter : std_logic_vector(7 downto 0);
-	signal end_count : std_logic;
-	signal all_sent : std_logic;
+	signal char_END       : std_logic_vector(7 downto 0);
+	signal report_counter : std_logic_vector(7 downto 0) := (others => '0');
+	signal end_count      : std_logic;
+	signal all_sent       : std_logic;
 
 begin
 
@@ -90,16 +90,16 @@ begin
 		comp_en  => comp_en,
 
 		-- Output
-		count_out => FSL_M_Data(0 to 15),
+		count_out  => FSL_M_Data(0 to 15),
 		count_out2 => FSL_M_Data(16 to 31),
-		curr_char => curr_char
+		curr_char  => curr_char
 	);
 
 	--------------- Initialize Machine ------------------
 	state_reg : process(FSL_clk, FSL_Rst) -- Machine starts with reset signal
 	begin
 		if FSL_clk'event and FSL_clk = '1' then
-			if  FSL_Rst = '1' then
+			if FSL_Rst = '1' then
 				currstate <= s_initial;
 			else
 				currstate <= nextstate;
@@ -114,7 +114,6 @@ begin
 		we <= '0';
 		comp_en <= '0';
 		sel_word <= "00";
-		report_counter <= (others => '0');
 		FSL_S_Read <= '0';
 		FSL_M_Write <= '0';
 		FSL_M_Control <= '0';
@@ -138,63 +137,73 @@ begin
 
 			------- Write Char to Memory ------
 			when s_count_1_special =>	-- first char. comp_en should be 0
-				sel_word <= "00";
-				we <= '1';
-				comp_en <= '0';
-				FSL_S_Read <= '1';
-				if end_count = '1' then
-					nextstate <= s_report;
-					FSL_M_Control <= '1';
-				else
-					nextstate <= s_count_2;
-				end if;
+				if FSL_S_Exists = '1' then
+					sel_word <= "00";
+					we <= '1';
+					comp_en <= '0';
+					FSL_S_Read <= '1';
+					if end_count = '1' then
+						nextstate <= s_report;
+						FSL_M_Control <= '1';
+					else
+						nextstate <= s_count_2;
+					end if;
+				end if ;
 
 			when s_count_1 =>
-				sel_word <= "00";
-				we <= '1';
-				comp_en <= '1';
-				FSL_S_Read <= '1';
-				if end_count = '1' then
-					nextstate <= s_report;
-					FSL_M_Control <= '1';
-				else
-					nextstate <= s_count_2;
+				if FSL_S_Exists = '1' then
+					sel_word <= "00";
+					we <= '1';
+					comp_en <= '1';
+					FSL_S_Read <= '1';
+					if end_count = '1' then
+						nextstate <= s_report;
+						FSL_M_Control <= '1';
+					else
+						nextstate <= s_count_2;
+					end if;
 				end if;
 
 			when s_count_2 =>
-				sel_word <= "01";
-				we <= '1';
-				comp_en <= '1';
-				FSL_S_Read <= '1';
-				if end_count = '1' then
-					nextstate <= s_report;
-					FSL_M_Control <= '1';
-				else
-					nextstate <= s_count_3;
+				if FSL_S_Exists = '1' then
+					sel_word <= "01";
+					we <= '1';
+					comp_en <= '1';
+					FSL_S_Read <= '1';
+					if end_count = '1' then
+						nextstate <= s_report;
+						FSL_M_Control <= '1';
+					else
+						nextstate <= s_count_3;
+					end if;
 				end if;
 
 			when s_count_3 =>
-				sel_word <= "10";
-				we <= '1';
-				comp_en <= '1';
-				FSL_S_Read <= '1';
-				if end_count = '1' then
-					nextstate <= s_report;
-					FSL_M_Control <= '1';
-				else
-					nextstate <= s_count_4;
+				if FSL_S_Exists = '1' then
+					sel_word <= "10";
+					we <= '1';
+					comp_en <= '1';
+					FSL_S_Read <= '1';
+					if end_count = '1' then
+						nextstate <= s_report;
+						FSL_M_Control <= '1';
+					else
+						nextstate <= s_count_4;
+					end if;
 				end if;
 
 			when s_count_4 =>
-				sel_word <= "11";
-				we <= '1';
-				comp_en <= '1';
-				FSL_S_Read <= '1';
-				if end_count = '1' then
-					nextstate <= s_report;
-					FSL_M_Control <= '1';
-				else
-					nextstate <= s_count_1;
+				if FSL_S_Exists = '1' then
+					sel_word <= "11";
+					we <= '1';
+					comp_en <= '1';
+					FSL_S_Read <= '1';
+					if end_count = '1' then
+						nextstate <= s_report;
+						FSL_M_Control <= '1';
+					else
+						nextstate <= s_count_1;
+					end if;
 				end if;
 
 			---- Report results to Master ---
@@ -204,19 +213,28 @@ begin
 
 				if all_sent = '1' then
 					nextstate <= s_end;	-- nextstate is currstate by default
+					FSL_M_Write <= '1';
 				elsif FSL_M_Full = '0' then
 					FSL_M_Write <= '1';
-				end if;
-
-				if FSL_Clk'event and FSL_Clk = '1' then
-					report_counter <= report_counter + 2;
 				end if;
 
 			------- Final State -------------
 			when s_end =>
 				nextstate <= s_initial;
+				FSL_M_Write <= '0';
 		end case;
 	end process; -- state_comb
+
+	Counter : process(report_counter, FSL_Clk)
+	begin
+		if FSL_Clk'event and FSL_Clk = '1' then
+			if currstate = s_report and FSL_M_Full = '0' then
+				report_counter <= report_counter + 2;
+			else
+				report_counter <= X"00";
+			end if ;
+		end if;
+	end process ; -- Counter
 
 	process(FSL_clk)
 	begin
