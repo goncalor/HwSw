@@ -8,6 +8,7 @@
 
 #ifdef MB
 #include "htimer.h"
+#include "fsl.h"	// ??
 #endif
 
 int main(int argc, char **argv)
@@ -42,9 +43,31 @@ int main(int argc, char **argv)
 	#endif
 
 	file[MAX_FILE_SIZE-1] = FILE_END_CODE;	// place end of file code. to be safe
-	compute_stats((char *) file);
 
-	#ifdef MB
+	#ifndef MB
+	compute_stats((char *) file);
+	#else
+
+	u32 * file_aux = (u32 *) file;
+
+	cputfsl(FILE_END_CODE, 0);	// send FILE_END_CODE for the accelarator to recognise it
+	
+	while(((*file_aux & 0xFF000000) != FILE_END_CODE) && 
+			((*file_aux & 0x00FF0000) != FILE_END_CODE) && 
+			((*file_aux & 0x0000FF00) != FILE_END_CODE) && 
+			((*file_aux & 0x000000FF) != FILE_END_CODE) )
+	{
+		putfsl(*file_aux, 0);
+		file_aux++;
+	}
+
+	for(i=0; i<128; i++)
+	{
+		getfsl(stats[i], 0);
+
+		xil_printf("stats %d -> %d\n", i, stats[i]);
+	}
+
 	timeH[1] = get_timer64_val(&(timeL[1]));
 	#endif
 
