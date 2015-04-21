@@ -45,23 +45,6 @@ entity stats_acc is
 	);
 end entity; -- stats_acc
 
---entity fsm is
---	port(
---			-- Input
---			clk   : in std_logic;
---			rst   : in std_logic;
---			start : in std_logic;
---			RW    : in std_logic; -- 0 write, 1 read
---			curr_char : out std_logic_vector(7 downto 0);
---
---			-- Output
---			sel_word : out std_logic_vector(1 downto 0);
---			we       : out std_logic;
---			comp_en  : out std_logic;
---			addr     : out std_logic_vector(7 downto 0)
---			);
---end fsm;
-
 architecture Behavioral of stats_acc is
 
 	component datapath is
@@ -79,22 +62,6 @@ architecture Behavioral of stats_acc is
 			curr_char : out std_logic_vector(7 downto 0)
 		);
 	end component;
-
-	--	component fsm is
-	--		port(
-	--			-- Input
-	--			clk	  : in std_logic;
-	--			rst	  : in std_logic;
-	--			start : in std_logic;
-	--			RW    : in std_logic;
-	--
-	--			-- Output
-	--			sel_word : out std_logic_vector(1 downto 0);
-	--			we       : out std_logic;
-	--			comp_en  : out std_logic;
-	--			addr     : out std_logic_vector(7 downto 0)
-	--		);
-	--	end component;
 
 	---------------- Auxilliary Variables ----------------
 	type fsm_states is (s_initial, s_save_END, s_count_1_special, s_count_1, s_count_2, s_count_3, s_count_4, s_report, s_end);
@@ -128,21 +95,6 @@ begin
 		curr_char => curr_char
 	);
 
-	--	Inst_fsm : fsm
-	--	port map(
-	--		-- Input
-	--		clk   => FSL_Clk, -- vem da fsl
-	--		rst   => FSL_Rst, -- vem da fsl
-	--		start => FSL_S_Exists, -- vem da fsl
-	--		RW    => FSL_S_Control,
-	--
-	--		-- Output
-	--		sel_word => sel_word_aux, -- liga a sel_char da datapath
-	--		we       => we_aux, -- liga a we da datapath
-	--		comp_en  => comp_en_aux, -- liga a comp_en da datapath
-	--		addr     => open -- liga isto à BRAM para retirar o endereço
-	--	);
-
 	--------------- Initialize Machine ------------------
 	state_reg : process(FSL_clk, FSL_Rst) -- Machine starts with reset signal
 	begin
@@ -162,7 +114,6 @@ begin
 		we <= '0';
 		comp_en <= '0';
 		sel_word <= "00";
-		--addr <= X"00";
 		report_counter <= (others => '0');
 		FSL_S_Read <= '0';
 		FSL_M_Write <= '0';
