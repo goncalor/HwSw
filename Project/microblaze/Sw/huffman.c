@@ -51,21 +51,26 @@ int main(int argc, char **argv)
 	u32 * file_aux = (u32 *) file;
 
 	cputfsl(FILE_END_CODE, 0);	// send FILE_END_CODE for the accelarator to recognise it
-	
-	while(((*file_aux & 0xFF000000) != FILE_END_CODE) && 
-			((*file_aux & 0x00FF0000) != FILE_END_CODE) && 
-			((*file_aux & 0x0000FF00) != FILE_END_CODE) && 
+
+	while(((*file_aux & 0xFF000000) != FILE_END_CODE) &&
+			((*file_aux & 0x00FF0000) != FILE_END_CODE) &&
+			((*file_aux & 0x0000FF00) != FILE_END_CODE) &&
 			((*file_aux & 0x000000FF) != FILE_END_CODE) )
 	{
 		putfsl(*file_aux, 0);
 		file_aux++;
 	}
 
-	for(i=0; i<128; i++)
+	int tmp;
+	for(i=0; i<128; i = i + 2)
 	{
-		getfsl(stats[i], 0);
+		getfsl(tmp, 0);
+
+		stats[i] = tmp & 0xFFFF0000;
+		stats[i + 1] = tmp & 0x0000FFFF;
 
 		xil_printf("stats %d -> %d\n", i, stats[i]);
+		xil_printf("stats %d -> %d\n", i + 1, stats[i + 1]);
 	}
 
 	timeH[1] = get_timer64_val(&(timeL[1]));
