@@ -230,7 +230,7 @@ begin
 		if FSL_Clk'event and FSL_Clk = '1' then
 			if currstate = s_report and FSL_M_Full = '0' then
 				report_counter <= report_counter + 2;
-			else
+			elsif currstate /= s_report then
 				report_counter <= X"00";
 			end if ;
 		end if;
