@@ -52,9 +52,9 @@ int main(int argc, char **argv)
 
 	cputfsl(FILE_END_CODE, 0);	// send FILE_END_CODE for the accelarator to recognise it
 
-	while(((*file_aux & 0xFF000000) != FILE_END_CODE) &&
-			((*file_aux & 0x00FF0000) != FILE_END_CODE) &&
-			((*file_aux & 0x0000FF00) != FILE_END_CODE) &&
+	while(((*file_aux & 0xFF000000)>>24 != FILE_END_CODE) &&
+			((*file_aux & 0x00FF0000)>>16 != FILE_END_CODE) &&
+			((*file_aux & 0x0000FF00)>>8 != FILE_END_CODE) &&
 			((*file_aux & 0x000000FF) != FILE_END_CODE) )
 	{
 		putfsl(*file_aux, 0);
@@ -62,11 +62,11 @@ int main(int argc, char **argv)
 	}
 
 	int tmp;
-	for(i=0; i<128; i = i + 2)
+	for(i=0; i<256; i = i + 2)
 	{
 		getfsl(tmp, 0);
 
-		stats[i] = tmp & 0xFFFF0000;
+		stats[i] = tmp & 0xFFFF0000>>16;
 		stats[i + 1] = tmp & 0x0000FFFF;
 
 		xil_printf("stats %d -> %d\n", i, stats[i]);
