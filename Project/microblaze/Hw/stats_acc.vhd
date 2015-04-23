@@ -109,7 +109,7 @@ begin
 	end process ; -- state_reg
 
 	----------------- Machine States --------------------
-	state_comb : process(currstate, FSL_clk, FSL_S_Exists, FSL_S_Control, FSL_M_Full, end_count, all_sent)
+	state_comb : process(currstate, FSL_clk, FSL_S_Exists, FSL_S_Control, FSL_M_Full, end_count, all_sent, prev_exists)
 	begin
 		nextstate <= currstate;
 		we <= '0';
@@ -123,17 +123,15 @@ begin
 			------- Initial State -------------
 			when s_initial => -- Initial State
 				if FSL_S_Exists = '1' then
+					FSL_S_Read <= '1';
 					if FSL_S_Control = '1' then
 						nextstate <= s_save_END;
-					else	-- consume input. this case should never happen
-						FSL_S_Read <= '1';
 					end if;
 				end if;
 
 			------ save end of file char ------
 			when s_save_END =>
 				nextstate <= s_count_1_special;
-				FSL_S_Read <= '1';
 			-- char_END is saved in a process bellow
 
 			------- Write Char to Memory ------
