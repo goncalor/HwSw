@@ -8,7 +8,7 @@
 
 #ifdef MB
 #include "htimer.h"
-#include "fsl.h"	// ??
+#include "fsl.h"
 #endif
 
 int main(int argc, char **argv)
@@ -60,6 +60,8 @@ int main(int argc, char **argv)
 		putfsl(*file_aux, 0);
 		file_aux++;
 	}
+
+	putfsl(*file_aux, 0);	// put the last byte, which contains FILE_END_CODE
 
 	int tmp;
 	for(i=0; i<256; i = i + 2)
