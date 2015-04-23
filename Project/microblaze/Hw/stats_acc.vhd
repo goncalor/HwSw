@@ -79,6 +79,15 @@ architecture Behavioral of stats_acc is
 	signal all_sent       : std_logic;
 	signal prev_exists    : std_logic;
 
+	signal FSL_S_Read_aux    : std_logic;
+	signal FSL_S_Data_aux    : std_logic_vector(0 to 31);
+	signal FSL_S_Control_aux : std_logic;
+	signal FSL_S_Exists_aux  : std_logic;
+	signal FSL_M_Write_aux   : std_logic;
+	signal FSL_M_Data_aux    : std_logic_vector(0 to 31);
+	signal FSL_M_Control_aux : std_logic;
+	signal FSL_M_Full_aux    : std_logic;
+
 begin
 
 	Inst_datapath : datapath
@@ -91,8 +100,8 @@ begin
 		comp_en  => comp_en,
 
 		-- Output
-		count_out  => FSL_M_Data(0 to 15),
-		count_out2 => FSL_M_Data(16 to 31),
+		count_out  => FSL_M_Data_aux(0 to 15),
+		count_out2 => FSL_M_Data_aux(16 to 31),
 		curr_char  => curr_char
 	);
 
@@ -109,22 +118,22 @@ begin
 	end process ; -- state_reg
 
 	----------------- Machine States --------------------
-	state_comb : process(currstate, FSL_clk, FSL_S_Exists, FSL_S_Control, FSL_M_Full, end_count, all_sent, prev_exists)
+	state_comb : process(currstate, FSL_clk, FSL_S_Exists_aux, FSL_S_Control_aux, FSL_M_Full_aux, end_count, all_sent, prev_exists)
 	begin
 		nextstate <= currstate;
 		we <= '0';
 		comp_en <= '0';
 		sel_word <= "00";
-		FSL_S_Read <= '0';
-		FSL_M_Write <= '0';
-		FSL_M_Control <= '0';
+		FSL_S_Read_aux <= '0';
+		FSL_M_Write_aux <= '0';
+		FSL_M_Control_aux <= '0';
 
 		case(currstate) is
 			------- Initial State -------------
 			when s_initial => -- Initial State
-				if FSL_S_Exists = '1' then
-					FSL_S_Read <= '1';
-					if FSL_S_Control = '1' then
+				if FSL_S_Exists_aux = '1' then
+					FSL_S_Read_aux <= '1';
+					if FSL_S_Control_aux = '1' then
 						nextstate <= s_save_END;
 					end if;
 				end if;
@@ -136,21 +145,21 @@ begin
 
 			------- Write Char to Memory ------
 			when s_count_1_special =>	-- first char. comp_en should be 0
-				if FSL_S_Exists = '1' then
+				if FSL_S_Exists_aux = '1' then
 					sel_word <= "00";
 					we <= '1';
 					comp_en <= '0';
-					FSL_S_Read <= '1';
+					FSL_S_Read_aux <= '1';
 					if end_count = '1' then
 						nextstate <= s_report;
-						FSL_M_Control <= '1';
+						FSL_M_Control_aux <= '1';
 					else
 						nextstate <= s_count_2;
 					end if;
 				end if ;
 
 			when s_count_1 =>
-				if FSL_S_Exists = '1' then
+				if FSL_S_Exists_aux = '1' then
 					sel_word <= "00";
 					we <= '1';
 					-- only enable compare if the prev char is valid.
@@ -158,47 +167,47 @@ begin
 					if prev_exists = '1' then
 						comp_en <= '1';
 					end if;
-					FSL_S_Read <= '1';
+					FSL_S_Read_aux <= '1';
 					if end_count = '1' then
 						nextstate <= s_report;
-						FSL_M_Control <= '1';
+						FSL_M_Control_aux <= '1';
 					else
 						nextstate <= s_count_2;
 					end if;
 				end if;
 
 			when s_count_2 =>
-					sel_word <= "01";
-					we <= '1';
-					comp_en <= '1';
-					if end_count = '1' then
-						nextstate <= s_report;
-						FSL_M_Control <= '1';
-					else
-						nextstate <= s_count_3;
-					end if;
+				sel_word <= "01";
+				we <= '1';
+				comp_en <= '1';
+				if end_count = '1' then
+					nextstate <= s_report;
+					FSL_M_Control_aux <= '1';
+				else
+					nextstate <= s_count_3;
+				end if;
 
 			when s_count_3 =>
-					sel_word <= "10";
-					we <= '1';
-					comp_en <= '1';
-					if end_count = '1' then
-						nextstate <= s_report;
-						FSL_M_Control <= '1';
-					else
-						nextstate <= s_count_4;
-					end if;
+				sel_word <= "10";
+				we <= '1';
+				comp_en <= '1';
+				if end_count = '1' then
+					nextstate <= s_report;
+					FSL_M_Control_aux <= '1';
+				else
+					nextstate <= s_count_4;
+				end if;
 
 			when s_count_4 =>
-					sel_word <= "11";
-					we <= '1';
-					comp_en <= '1';
-					if end_count = '1' then
-						nextstate <= s_report;
-						FSL_M_Control <= '1';
-					else
-						nextstate <= s_count_1;
-					end if;
+				sel_word <= "11";
+				we <= '1';
+				comp_en <= '1';
+				if end_count = '1' then
+					nextstate <= s_report;
+					FSL_M_Control_aux <= '1';
+				else
+					nextstate <= s_count_1;
+				end if;
 
 			---- Report results to Master ---
 			when s_report =>
@@ -207,15 +216,15 @@ begin
 
 				if all_sent = '1' then
 					nextstate <= s_end;	-- nextstate is currstate by default
-					FSL_M_Write <= '1';
-				elsif FSL_M_Full = '0' then
-					FSL_M_Write <= '1';
+					FSL_M_Write_aux <= '1';
+				elsif FSL_M_Full_aux = '0' then
+					FSL_M_Write_aux <= '1';
 				end if;
 
 			------- Final State -------------
 			when s_end =>
 				nextstate <= s_initial;
-				FSL_M_Write <= '0';
+				FSL_M_Write_aux <= '0';
 		end case;
 	end process; -- state_comb
 
@@ -223,7 +232,7 @@ begin
 	Counter : process(report_counter, FSL_Clk)
 	begin
 		if FSL_Clk'event and FSL_Clk = '1' then
-			if currstate = s_report and FSL_M_Full = '0' then
+			if currstate = s_report and FSL_M_Full_aux = '0' then
 				report_counter <= report_counter + 2;
 			elsif currstate /= s_report then
 				report_counter <= X"00";
@@ -235,8 +244,8 @@ begin
 	process(FSL_clk)
 	begin
 		if FSL_clk'event and FSL_clk = '1' then
-			if FSL_S_Control = '1' then
-				char_END <= FSL_S_Data(0 to 7);
+			if FSL_S_Control_aux = '1' then
+				char_END <= FSL_S_Data_aux(0 to 7);
 			end if;
 		end if;
 	end process;
@@ -245,14 +254,31 @@ begin
 	process(FSL_clk)
 	begin
 		if FSL_clk'event and FSL_clk = '1' then
-			prev_exists <= FSL_S_Exists;
+			prev_exists <= FSL_S_Exists_aux;
+		end if;
+	end process;
+
+	-- registers at the input and output of the accelerator
+	process(FSL_clk)
+	begin
+		if FSL_clk'event and FSL_clk = '1' then
+			-- input
+			FSL_S_Data_aux    <= FSL_S_Data;
+			FSL_S_Control_aux <= FSL_S_Control;
+			FSL_S_Exists_aux  <= FSL_S_Exists;
+			FSL_M_Full_aux    <= FSL_M_Full;
+			-- output
+			FSL_S_Read    <= FSL_S_Read_aux;
+			FSL_M_Write   <= FSL_M_Write_aux;
+			FSL_M_Data    <= FSL_M_Data_aux;
+			FSL_M_Control <= FSL_M_Control_aux;
 		end if;
 	end process;
 
 	end_count <= '1' when curr_char = char_END else '0';
 
 	-- when reporting the word is substituted for report_counter
-	word <= x"000000" & report_counter when currstate = s_report else FSL_S_Data;
+	word <= x"000000" & report_counter when currstate = s_report else FSL_S_Data_aux;
 	all_sent <= '1' when report_counter = "11111110" else '0';	-- 254
 
 end Behavioral;
