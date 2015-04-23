@@ -77,6 +77,7 @@ architecture Behavioral of stats_acc is
 	signal report_counter : std_logic_vector(7 downto 0) := (others => '0');
 	signal end_count      : std_logic;
 	signal all_sent       : std_logic;
+	signal prev_exists    : std_logic;
 
 begin
 
@@ -154,7 +155,11 @@ begin
 				if FSL_S_Exists = '1' then
 					sel_word <= "00";
 					we <= '1';
-					comp_en <= '1';
+					-- only enable compare if the prev char is valid.
+					-- otherwise if should not be considered
+					if prev_exists = '1' then
+						comp_en <= '1';
+					end if;
 					FSL_S_Read <= '1';
 					if end_count = '1' then
 						nextstate <= s_report;
@@ -165,46 +170,37 @@ begin
 				end if;
 
 			when s_count_2 =>
-				if FSL_S_Exists = '1' then
 					sel_word <= "01";
 					we <= '1';
 					comp_en <= '1';
-					FSL_S_Read <= '1';
 					if end_count = '1' then
 						nextstate <= s_report;
 						FSL_M_Control <= '1';
 					else
 						nextstate <= s_count_3;
 					end if;
-				end if;
 
 			when s_count_3 =>
-				if FSL_S_Exists = '1' then
 					sel_word <= "10";
 					we <= '1';
 					comp_en <= '1';
-					FSL_S_Read <= '1';
 					if end_count = '1' then
 						nextstate <= s_report;
 						FSL_M_Control <= '1';
 					else
 						nextstate <= s_count_4;
 					end if;
-				end if;
 
 			when s_count_4 =>
-				if FSL_S_Exists = '1' then
 					sel_word <= "11";
 					we <= '1';
 					comp_en <= '1';
-					FSL_S_Read <= '1';
 					if end_count = '1' then
 						nextstate <= s_report;
 						FSL_M_Control <= '1';
 					else
 						nextstate <= s_count_1;
 					end if;
-				end if;
 
 			---- Report results to Master ---
 			when s_report =>
@@ -225,6 +221,7 @@ begin
 		end case;
 	end process; -- state_comb
 
+	-- update Counter for report phase
 	Counter : process(report_counter, FSL_Clk)
 	begin
 		if FSL_Clk'event and FSL_Clk = '1' then
@@ -236,12 +233,21 @@ begin
 		end if;
 	end process ; -- Counter
 
+	-- save char_END
 	process(FSL_clk)
 	begin
 		if FSL_clk'event and FSL_clk = '1' then
 			if FSL_S_Control = '1' then
 				char_END <= FSL_S_Data(0 to 7);
 			end if;
+		end if;
+	end process;
+
+	-- save prev Exists signal
+	process(FSL_clk)
+	begin
+		if FSL_clk'event and FSL_clk = '1' then
+			prev_exists <= FSL_S_Exists;
 		end if;
 	end process;
 
