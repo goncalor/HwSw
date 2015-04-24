@@ -211,14 +211,11 @@ begin
 
 			---- Report results to Master ---
 			when s_report =>
-				we <= '0';
-				sel_word <= "00";
-
-				if all_sent = '1' then
-					nextstate <= s_end;	-- nextstate is currstate by default
+				if FSL_M_Full_aux = '0' then
 					FSL_M_Write_aux <= '1';
-				elsif FSL_M_Full_aux = '0' then
-					FSL_M_Write_aux <= '1';
+					if all_sent = '1' then
+						nextstate <= s_end;
+					end if ;
 				end if;
 
 			------- Final State -------------
@@ -263,7 +260,6 @@ begin
 	begin
 		if FSL_clk'event and FSL_clk = '1' then
 			-- output
-			FSL_M_Write   <= FSL_M_Write_aux;
 			FSL_M_Data    <= FSL_M_Data_aux;
 			FSL_M_Control <= FSL_M_Control_aux;
 		end if;
@@ -274,8 +270,10 @@ begin
 	FSL_S_Control_aux <= FSL_S_Control;
 	FSL_S_Exists_aux  <= FSL_S_Exists;
 	FSL_M_Full_aux    <= FSL_M_Full;
+
 	-- output
 	FSL_S_Read    <= FSL_S_Read_aux;
+	FSL_M_Write   <= FSL_M_Write_aux;
 
 	end_count <= '1' when curr_char = char_END else '0';
 
