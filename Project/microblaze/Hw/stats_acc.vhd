@@ -262,18 +262,20 @@ begin
 	process(FSL_clk)
 	begin
 		if FSL_clk'event and FSL_clk = '1' then
-			-- input
-			FSL_S_Data_aux    <= FSL_S_Data;
-			FSL_S_Control_aux <= FSL_S_Control;
-			FSL_S_Exists_aux  <= FSL_S_Exists;
-			FSL_M_Full_aux    <= FSL_M_Full;
 			-- output
-			FSL_S_Read    <= FSL_S_Read_aux;
 			FSL_M_Write   <= FSL_M_Write_aux;
 			FSL_M_Data    <= FSL_M_Data_aux;
 			FSL_M_Control <= FSL_M_Control_aux;
 		end if;
 	end process;
+
+	-- input
+	FSL_S_Data_aux    <= FSL_S_Data;
+	FSL_S_Control_aux <= FSL_S_Control;
+	FSL_S_Exists_aux  <= FSL_S_Exists;
+	FSL_M_Full_aux    <= FSL_M_Full;
+	-- output
+	FSL_S_Read    <= FSL_S_Read_aux;
 
 	end_count <= '1' when curr_char = char_END else '0';
 
