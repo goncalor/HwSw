@@ -67,17 +67,17 @@ architecture Behavioral of stats_acc is
 	type fsm_states is (s_initial, s_save_END, s_count_1_special, s_count_1, s_count_2, s_count_3, s_count_4, s_report, s_end);
 	signal currstate, nextstate: fsm_states;
 
-	signal word      : std_logic_vector(31 downto 0);
-	signal sel_word  : std_logic_vector(1 downto 0);
-	signal we        : std_logic;
-	signal comp_en   : std_logic;
-	signal curr_char : std_logic_vector(7 downto 0);
+	signal word              : std_logic_vector(31 downto 0);
+	signal sel_word          : std_logic_vector(1 downto 0);
+	signal we                : std_logic;
+	signal comp_en           : std_logic;
+	signal curr_char         : std_logic_vector(7 downto 0);
 
-	signal char_END       : std_logic_vector(7 downto 0);
-	signal report_counter : std_logic_vector(7 downto 0) := (others => '0');
-	signal end_count      : std_logic;
-	signal all_sent       : std_logic;
-	signal prev_exists    : std_logic;
+	signal char_END          : std_logic_vector(7 downto 0);
+	signal report_counter    : std_logic_vector(7 downto 0) := (others => '0');
+	signal end_count         : std_logic;
+	signal all_sent          : std_logic;
+	signal prev_exists       : std_logic;
 
 	signal FSL_S_Read_aux    : std_logic;
 	signal FSL_S_Data_aux    : std_logic_vector(0 to 31);
@@ -87,6 +87,7 @@ architecture Behavioral of stats_acc is
 	signal FSL_M_Data_aux    : std_logic_vector(0 to 31);
 	signal FSL_M_Control_aux : std_logic;
 	signal FSL_M_Full_aux    : std_logic;
+	signal en_counter        : std_logic;
 
 begin
 
@@ -118,7 +119,7 @@ begin
 	end process ; -- state_reg
 
 	----------------- Machine States --------------------
-	state_comb : process(currstate, FSL_clk, FSL_S_Exists_aux, FSL_S_Control_aux, FSL_M_Full_aux, end_count, all_sent, prev_exists)
+	state_comb : process(currstate, FSL_clk, FSL_S_Exists_aux, FSL_S_Control_aux, FSL_M_Full_aux, end_count, all_sent, prev_exists, en_counter)
 	begin
 		nextstate <= currstate;
 		we <= '0';
@@ -127,6 +128,7 @@ begin
 		FSL_S_Read_aux <= '0';
 		FSL_M_Write_aux <= '0';
 		FSL_M_Control_aux <= '0';
+		en_counter <= '0';
 
 		case(currstate) is
 			------- Initial State -------------
@@ -213,6 +215,7 @@ begin
 			when s_report =>
 				if FSL_M_Full_aux = '0' then
 					FSL_M_Write_aux <= '1';
+					en_counter <= '1';
 					if all_sent = '1' then
 						nextstate <= s_end;
 					end if ;
@@ -229,9 +232,9 @@ begin
 	Counter : process(report_counter, FSL_Clk)
 	begin
 		if FSL_Clk'event and FSL_Clk = '1' then
-			if currstate = s_report and FSL_M_Full_aux = '0' then
+			if en_counter = '1' then
 				report_counter <= report_counter + 2;
-			elsif currstate /= s_report then
+			else
 				report_counter <= X"00";
 			end if ;
 		end if;
