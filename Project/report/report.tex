@@ -4,7 +4,7 @@
 
 \usepackage{textcomp}
 \usepackage[hypcap]{caption} % makes \ref point to top of figures and tables
-\usepackage{rotating}
+%\usepackage{rotating}
 
 \begin{document}
 	\trSetImage{img/tecnico_logo}{6cm} % Logotipo do Técnico
@@ -46,9 +46,12 @@
 	
 	O componente de hardware desenvolvido liga-se ao MicroBlaze através de uma interface FSL (\textit{Fast Simplex Link}). O acelerador foi desenhado e testado no Xilinx ISE (\textit{Integrated Synthesis Environment}) e subsequentemente integrado no sistema. O sistema foi testado e o desempenho foi novamente medido.
 	
+	
+	
 	\section{Codificação de Huffman}
+	\label{sec:theory}
 
-	A codificação de Huffman é um método de compressão que consiste em encontrar uma representação alternativa---um \emph{código}---para cada \emph{símbolo} do alfabeto dos dados a comprimir. A compressão resulta do facto de o código escolhido para um dado símbolo ser tanto mais curto quanto maior for a frequência absoluta desse símbolo nos dados. A símbolos mais raros são atribuídos códigos mais longos. Os códigos encontrados têm uma propriedade importante: nenhum código é prefixo de outro código. Isto permite que durante processo de descompressão não haja qualquer ambiguidade.
+	A codificação de Huffman é um método de compressão que consiste em encontrar uma representação alternativa---um \emph{código}---para cada \emph{símbolo} do alfabeto dos dados a comprimir. A compressão resulta do facto de o código escolhido para um dado símbolo ser tanto mais curto quanto maior for a frequência absoluta desse símbolo nos dados. A símbolos mais raros são atribuídos códigos mais longos. Os códigos encontrados têm uma propriedade importante: nenhum código é prefixo de outro código. Isto permite que durante o processo de descompressão não haja qualquer ambiguidade.
 	
 	Os passos necessários ao algoritmo de compressão são os seguintes:
 	
@@ -84,13 +87,40 @@
 		\label{fig:huffman_tree_example}
 	\end{figure}
 	
-	Os códigos para cada carácter obtêm-se percorrendo a \textit{trie} da raiz até à folha que contem o respectivo carácter. Cada vez que se passa para um filho à esquerda adicionamos o bit 0 à codificação; cada vez que se segue para um filho à direita adiciona-se um bit com o valor 1. Assim por exemplo o código de \texttt{A} é \texttt{0001}, o de \texttt{C} é \texttt{01} e o de \texttt{D} é \texttt{1}. É de notar que, tal como previsto, os caracteres que ocorrem menos vezes têm códigos mais curtos.
+	Os códigos para cada carácter obtêm-se percorrendo a \textit{trie} da raiz até à folha que contem o respectivo carácter. Cada vez que se passa para um filho à esquerda adicionamos o bit 0 à codificação; cada vez que se segue para um filho à direita adiciona-se um bit com o valor 1. Assim, por exemplo o código de \texttt{A} é \texttt{0001}, o de \texttt{C} é \texttt{01} e o de \texttt{D} é \texttt{1}. É de notar que, tal como previsto, os caracteres que ocorrem menos vezes têm códigos mais curtos.
+	
+	O ficheiro comprimido seria portanto \texttt{0001 001 001 01 01 01 1 0000}. De $11 \times 8 = 88$ bits passou-se a 21 bits.
+	
+	No entanto, seria ainda necessário colocar no ficheiro uma representação da árvore para que o ficheiro pudesse ser descomprimido. A árvore poderia ser representada no ficheiro de saída como \texttt{00001 <EOF> 1 A 1 B 1 C 1 D}, em que \texttt{A}, \texttt{B}, \texttt{C}, \texttt{D} e \texttt{<EOF>} representam a codificação original do caracteres em ASCII. Assim, na verdade o ficheiro comprimido teria neste caso $21 + 9 + 5 \times 8 = 70$ bits. Em ficheiros pequenos a inclusão da árvore tem um grande impacto, como se percebe por este exemplo. Em ficheiros grandes o \textit{overhead} da inclusão da árvore é desprezável.
 	
 	\section{Software}
+
+	Nesta secção é descrita a implementação por software.
+
+	\subsection{Estatísticas do Ficheiro}
+	
+	Para obter a frequência absoluta de cada carácter do ficheiro é feito um varrimento do ficheiro e incrementado um contador relativo ao número de ocorrências desse carácter. Isto é feito até que seja encontrado o carácter terminador. Esse carácter está definido no programa como \texttt{FILE\_END\_CODE}. Ao longo desta parte do trabalho tem-se considerado como terminador o carácter \texttt{0x00}.
+	
+	A razão pela qual é preciso escolher um carácter como terminador prende-se com o facto de não termos um sistema operativo a correr no MicroBlaze. Caso tivéssemos um sistema operativo ele podia notificar o programa quando não houvesse mais conteúdo para ler.
+	
+	A complexidade desta fase do algoritmo é linear com o tamanho do ficheiro. Antes de se passar à construção da árvore, é construído um vector com pares (carácter, contagem), que não inclui caracteres com frequência absoluta nula. Na construção da árvore são portanto considerados apenas caracteres com pelo menos uma ocorrência. Isto resulta numa árvore mais pequena (menor \textit{overhead} no ficheiro comprimido) e torna a construção da árvore mais rápida.
+	
+	\subsection{Árvore}
+	
+	Tal como visto na Secção~\ref{sec:theory} uma operação muito frequente durante a construção da árvore de Huffman é encontrar as duas raízes que em cada momento têm menor frequência absoluta. De forma a acelerar estas procuras, fez-se a implementação da árvore recorrendo a um acervo (\textit{heap}) que contém apontadores para os nós da árvore. O acervo é construído com complexidade $O(n)$, permite remoção do elemento com menor frequência em $O(log\ n)$ e inserção também $O(n)$, em que $n$ é o número de elementos, sendo que neste caso temos $n \leq 256$.
+	
+	Por cada dois elementos (nós) que são removidos do acervo é adicionado um novo com frequência igual à soma das frequências dos que foram removidos. Os nós removidos são depois ``pendurados'' debaixo do novo nó. Assim sendo, cada elemento do acervo é na verdade uma árvore. Quando o acervo tiver apenas um elemento temos certeza de que esse constitui a árvore de Huffman. Note-se que por cada dois elementos que são removidos é adicionado apenas um, pelo que construir a árvore de Huffman demora, no máximo, 255 passos.
+		
+	\subsection{Ficheiro de Saída}
+	
+	Percorrendo a árvore de Huffman é possível obter o código que corresponde a cada carácter. De forma a optimizar o processo de codificação do ficheiro, começamos por percorrer a árvore e construir uma tabela indexada pelos caracteres, e que em cada posição contem um par (código, comprimento), em que \emph{comprimento} é o número de bits do código. Recorrendo a esta tabela é agora possível aceder ao código de cada carácter em tempo constante.
+	
+	Para codificar o ficheiro resta agora substituir os caracteres do ficheiro pelos seus códigos. Esta operação não é assim tão trivial visto que a unidade mínima de memória que é possível endereçar é o byte. Por este motivo é necessário codificar vários caracteres para construir cada byte do ficheiro de saída. Isto implica uma série de operações lógicas (\textit{shifts} e \textit{ors}) e aritméticas que demoram uma quantidade apreciável de tempo, como se pode notar na secção~\nameref{sec:results}.
 	
 	\section{Acelerador}
 	
 	\section{Resultados}
+	\label{sec:results}
 	
 	\section{Testes e Simulações}
 	
