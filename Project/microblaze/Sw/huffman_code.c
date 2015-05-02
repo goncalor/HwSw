@@ -3,7 +3,7 @@
 
 #include "huffman_code.h"
 #include "misc.h"
-#include "microblaze.h"
+#include "define.h"
 
 // A utility function allocate a new min heap node with given character
 // and frequency of the character
@@ -101,10 +101,18 @@ void printArr(int arr[], int n)
 {
 	int i;
 	for (i = 0; i < n; ++i){
+#ifndef MB
 		printf("%d", arr[i]);
+#else
+		xil_printf("%d", arr[i]);
+#endif
 		bits++;
 	}
+#ifndef MB
 	putchar(' ');
+#else
+	xil_printf(" ");
+#endif
 }
 
 // Utility function to check if this node is leaf
@@ -135,6 +143,7 @@ MinHeapNode* buildHuffmanTree(char data[], unsigned freq[], int size)
 	// Step 1: Create a min heap of capacity equal to size.  Initially, there are
 	// modes equal to size.
 
+	bits = 0;
 	tree_size = 0;
 	MinHeap* minHeap = createAndBuildMinHeap(data, freq, size);
 
@@ -190,60 +199,154 @@ void printCodes(MinHeapNode* root, int arr[], int top, char a)
  * Encodes tree in header of FILE
  * @param root root of tree
  */
-void encode_tree(struct MinHeapNode* root){
-  int * aux;
+void encode_tree(MinHeapNode* root){
+	int i;
+	int bin[8];
 
-  if(!isLeaf(root)){
-    putchar('0');
-    bits++;
-    encode_tree(root->left);
-    encode_tree(root->right);
-  }else{
-    putchar('1');
-    bits++;
-    putchar(' ');
-    aux = (int *) malloc(8 * sizeof(int));
-    aux = int2bin(aux, root->data);
-    for(int i = 7; i >= 0; i--){
-      printf("%d", aux[i]);
-      bits++;
-    }
-    free(aux);
-    putchar(' ');
-  }
+	if(!isLeaf(root)){
+#ifndef MB
+		putchar('0');
+#else
+		xil_printf("0");
+#endif
+		bits++;
+		encode_tree(root->left);
+		encode_tree(root->right);
+	}else{
+		bits++;
+#ifndef MB
+		putchar('1');
+		putchar(' ');
+#else
+		xil_printf("1");
+		xil_printf(" ");
+#endif
+
+		  int tmp = root->data;
+
+		  for(i = 0; i < 8; i++)
+		    bin[i] = 0;
+
+		  for(i = 0; i < 8 || tmp != 0; i++){
+		    bin[i] = tmp % 2;
+		    tmp = tmp / 2;
+		  }
+
+		//aux = int2bin(aux, root->data);
+		for(i = 7; i >= 0; i--){
+#ifndef MB
+			printf("%d", bin[i]);
+#else
+			xil_printf("%d", bin[i]);
+#endif
+			bits++;
+		}
+#ifndef MB
+		putchar(' ');
+#else
+		xil_printf(" ");
+#endif
+	}
 }
 
 void encode_text(char *file){
 	int arr[MAX_TREE_HT], top = 0, i;
 	MinHeapNode* root = min_heap.array[0];
-	i = 0;
+	char code;
 
+	i = 0;
 	do
 	{
-		printCodes(root, arr, top, file[i]);
+		code = file[i];
+		printCodes(root, arr, top, code);
 		i++;
 	}
-	while(file[i] != 0); // this should be FILE_END_CODE
+	while(code != FILE_END_CODE);
 
-	puts("EOF");
+	puts("< EOF");
 }
 
-// The main function that builds a Huffman Tree and print codes by traversing
-// the built Huffman Tree
-void HuffmanCodes(char data[], unsigned freq[], int size)
+// Traverses the Huffman tree pointed to by root and prints the file header and body
+void HuffmanPrint(MinHeapNode* root, char *file)
 {
-	//  Construct Huffman Tree
-	MinHeapNode* root = buildHuffmanTree(data, freq, size);
-	bits = 0;
-
 #ifndef MB
-	// Print Huffman codes using the Huffman tree built above
-	putchar('\n');
-	puts("--------------FILE OUT--------------");
-	putchar('\n');
+	puts("\n--------------FILE OUT--------------\n");
 	encode_tree(root);
 	//printf("\ntree_size = %u\n", tree_size);
-	puts("\r\n");
+	puts("\n");
+	encode_text(file);
+	puts("");
+#else
+	// Print Huffman codes using the Huffman tree built above
+	xil_printf("\n--------------FILE OUT--------------\n\n");
+	encode_tree(root);
+	xil_printf("\n\n");
+	encode_text(file);
+	xil_printf("\n");
 #endif
+}
 
+
+// Each table record has two chars:
+// - the first char is the codeword
+// - the second char is the length of the codeword (in bits).
+// The first call should be with pos = 1 in normal usage.
+// The first call should be with code = 0 in normal usage.
+// The number 8 is used because that's the number of bits in a char.
+void tree_to_table(MinHeapNode* root, char *table, char code, short pos)
+{
+
+	if(root->left != NULL)
+		tree_to_table(root->left, table, code, pos+1);
+		//tree_to_table(root->left, table, code&~(1 << 8-pos), pos+1);
+
+	if(root->right != NULL)
+		tree_to_table(root->right, table, code|(1 << (8-pos)), pos+1);
+
+	if(isLeaf(root))
+	{
+#ifdef debug
+		printf("%d\t%d\t%d\n", root->data, code, pos-1);
+#endif
+		table[root->data << 2] = code;
+		table[(root->data << 2)+1] = pos-1;
+	}
+}
+
+// encodes orig into dest. returns the number of bytes written
+// to dest.
+unsigned encode_file(char *orig, char *dest, char *codewords)
+{
+	unsigned orig_ptr, dest_ptr;
+	unsigned short word_len = 8, code_len, bits_used = 0;
+	unsigned char ascii, outword = 0, code;
+
+	orig_ptr = 0;
+	dest_ptr = 0;
+	do
+	{
+		ascii = orig[orig_ptr];
+		code = codewords[ascii<<2];	// retrieve the code for this ascii char
+		code_len = codewords[(ascii<<2)+1];	// and the length of the code
+
+		if(bits_used + code_len > word_len)
+		{
+			outword |= code >> bits_used;
+			dest[dest_ptr] = outword;
+			dest_ptr++;
+			outword = code << (word_len - bits_used);
+			bits_used = code_len + bits_used - word_len;
+		}
+		else
+		{
+			outword |= code >> bits_used;
+			bits_used += code_len;
+		}
+
+		orig_ptr++;
+	}
+	while(ascii != FILE_END_CODE);
+
+	dest[dest_ptr] = outword;	// the last codeword has not been written yet. write it!
+	return dest_ptr+1;
 }

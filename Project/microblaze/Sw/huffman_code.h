@@ -25,7 +25,11 @@ unsigned short tree_size;	// init to 0
 MinHeap min_heap;
 int bits;
 
-void HuffmanCodes(char data[], unsigned freq[], int size);
+void HuffmanPrint(MinHeapNode* root, char *file);
+MinHeapNode* buildHuffmanTree(char data[], unsigned freq[], int size);
 void encode_text(char *file);
+void tree_to_table(MinHeapNode* root, char *table, char code, short pos);
+void encode_tree(MinHeapNode* root);
+unsigned encode_file(char *orig, char *dest, char *codewords);
 
 #endif //HUFF
