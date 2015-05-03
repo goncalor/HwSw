@@ -17,8 +17,18 @@ int main(void)
 	//char file[] = "ACAGAATAGAGAX\0";
 	//char file[] = "ACAG AATA GAGA X\0";
 
-	//char file[] = "AGACAATAGAGAX\0";
-	char file[] = "ABBCCCDDDD\0";
+	//char file[] = "ABBCCCDDDD\n\r\0";
+	char file[] = {'A', 1, 2, 3, 4, 5, 6, 7, 8, 9,
+			10, 10,
+			11, 12, 13, 14, 15,
+			16, 16,
+			17, 17, 17,
+			18, 18, 18, 18,
+			19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32,
+			33, 33,
+			34, 34, 34,
+			35, 35, 35, 35,
+			36, 37, 0};
 
 	unsigned * file_aux = (unsigned *) file;
 	static unsigned stats[256];
@@ -36,11 +46,10 @@ int main(void)
 	}
 
 	putfsl(*file_aux, 0);
-//	putfsl(FILE_END_CODE, 0);
 
 	// xil_printf("unsigned size: %d B\n\n", sizeof(unsigned));
 
-	for(i=0; i<256; i = i + 2)
+	for(i=0; i<254; i = i + 2)
 	{
 		getfsl(tmp, 0);
 		//xil_printf("i: %d %x\n", i, tmp);
