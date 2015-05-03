@@ -64,7 +64,7 @@ architecture Behavioral of stats_acc is
 	end component;
 
 	---------------- Auxilliary Variables ----------------
-	type fsm_states is (s_initial, s_save_END, s_count_1_special, s_count_1, s_count_2, s_count_3, s_count_4, s_report, s_report_1, s_end);
+	type fsm_states is (s_initial, s_save_END, s_count_1_special, s_count_1, s_count_2, s_count_3, s_count_4, s_report, s_end);
 	signal currstate, nextstate: fsm_states;
 
 	signal word              : std_logic_vector(31 downto 0);
@@ -213,19 +213,12 @@ begin
 
 			---- Report results to Master ---
 			when s_report =>
-				nextstate <= s_report_1;
-				if FSL_M_Full_aux = '0' then
-					en_counter <= '1';
-				end if ;
-
-			when s_report_1 =>
-
 				if FSL_M_Full_aux = '0' then
 					FSL_M_Write_aux <= '1';
 					en_counter <= '1';
 					if all_sent = '1' then
 						nextstate <= s_end;
-					end if ;
+					end if;
 				end if;
 
 			------- Final State -------------
@@ -241,7 +234,7 @@ begin
 		if FSL_Clk'event and FSL_Clk = '1' then
 			if en_counter = '1' then
 				report_counter <= report_counter + 2;
-			elsif (currstate /= s_report and currstate /= s_report_1) then
+			elsif (currstate /= s_report) then
 				report_counter <= X"00";
 			end if ;
 		end if;
@@ -270,8 +263,6 @@ begin
 	begin
 		if FSL_clk'event and FSL_clk = '1' then
 			-- output
-			FSL_M_Data    <= FSL_M_Data_aux;
-			FSL_M_Control <= FSL_M_Control_aux;
 		end if;
 	end process;
 
@@ -284,11 +275,13 @@ begin
 	-- output
 	FSL_S_Read    <= FSL_S_Read_aux;
 	FSL_M_Write   <= FSL_M_Write_aux;
+	FSL_M_Data    <= FSL_M_Data_aux;
+	FSL_M_Control <= FSL_M_Control_aux;
 
 	end_count <= '1' when curr_char = char_END else '0';
 
 	-- when reporting the word is substituted for report_counter
-	word <= x"000000" & report_counter when currstate = s_report or currstate = s_report_1 else FSL_S_Data_aux;
+	word <= x"000000" & report_counter when currstate = s_report else FSL_S_Data_aux;
 	all_sent <= '1' when report_counter = "11111110" else '0';	-- 254
 
 end Behavioral;
