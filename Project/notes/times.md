@@ -31,3 +31,34 @@ Huffman Print medido sem xil_printf de maneira a ter uma medida mais realista. O
   + Build Tree      -> 32 ms
   + Tree to Table   -> 3 ms
   + Encode File     -> 159882 ms (2,66 min)
+
+## Resultados (com Aceleração)
+- tmp -> Total Time: 3 ms
+  + Compute Stats   -> 1 ms
+  + Build Tree      -> 0 ms
+  + Tree to Table   -> 0 ms
+  + Encode File     -> 0 ms
+
+- teste -> Total Time: 8 ms
+  + Compute Stats   -> 1 ms
+  + Build Tree      -> 5 ms
+  + Tree to Table   -> 1 ms
+  + Encode File     -> 0 ms
+
+- pdf -> Total Time: 6 ms
+  + Compute Stats   -> 1 ms
+  + Build Tree      -> 3 ms
+  + Tree to Table   -> 0 ms
+  + Encode File     -> 1 ms
+
+- read_me -> Total Time: 
+  + Compute Stats   -> 
+  + Build Tree      ->  
+  + Tree to Table   -> 
+  + Encode File     -> 
+
+- BIG_READ -> Total Time:
+  + Compute Stats   -> 
+  + Build Tree      -> 
+  + Tree to Table   -> 
+  + Encode File     -> 
