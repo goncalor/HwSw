@@ -1,0 +1,17 @@
+start compute_stats(): 0 ms
+finish compute_stats(): 1 ms
+start buildHuffmanTree(): 2 ms
+finish buildHuffmanTree(): 7 ms
+start HuffmanPrint(): 7 ms
+finish HuffmanPrint(): 7 ms
+start tree_to_table(): 7 ms
+finish tree_to_table(): 8 ms
+start encode_file(): 8 ms
+finish encode_file(): 8 ms
+time elapsed: 8 ms
+time elapsed: 8 ms
+----------------STATS---------------
+
+Compressed file
+	Size of compressed file (bits): 0
+	Size of compressed file (bytes): 17 (without header)
