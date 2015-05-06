@@ -1,0 +1,7 @@
+\paragraph{} Nesta parte do trabalho pretende-se criar um sistema constituído por um único processador MicroBlaze e um acelerador por hardware. O tema escolhido para o projecto é compressão de texto usando codificação de Huffman.
+
+Inicialmente começou-se por implementar o algoritmo de compressão em software. Depois de verificada a sua funcionalidade, o seu desempenho foi medido incluindo \textit{AXI timers} no sistema e contabilizando o tempo despendido por cada parte do algoritmo para diversos ficheiros de exemplo. Com base nesta medição, escolheu-se uma parte do algoritmo para ser acelerada por hardware.
+
+O componente de hardware desenvolvido liga-se ao MicroBlaze através de uma interface FSL (\textit{Fast Simplex Link}). O acelerador foi desenhado e testado no Xilinx ISE (\textit{Integrated Synthesis Environment}) e subsequentemente integrado no sistema. O sistema foi testado e o desempenho foi novamente medido.
+
+Neste relatório apresenta-se os resultados obtidos com aceleração e sem aceleração, tal como os problemas encontrados e áreas que ainda podem ser melhoradas.
