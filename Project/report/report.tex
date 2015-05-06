@@ -54,7 +54,7 @@
 
 	O componente de hardware desenvolvido liga-se ao MicroBlaze através de uma interface FSL (\textit{Fast Simplex Link}). O acelerador foi desenhado e testado no Xilinx ISE (\textit{Integrated Synthesis Environment}) e subsequentemente integrado no sistema. O sistema foi testado e o desempenho foi novamente medido.
 
-  Neste relatório apresentamos os resultados obtidos com aceleração e sem aceleração, tal como os problemas encontrados e áreas que ainda podem ser melhoradas.
+  Neste relatório apresenta-se os resultados obtidos com aceleração e sem aceleração, tal como os problemas encontrados e áreas que ainda podem ser melhoradas.
 
 
 	\section{Codificação de Huffman}
@@ -105,7 +105,7 @@
     \label{fig:trie_1}
   \end{figure}
 
-  O novo nó vai ser adicionada à lista de prioridades, vamos chamar-lhe \texttt{Nó 1}.
+  O novo nó vai ser adicionado à lista de prioridades, chamando-se \texttt{Nó 1}.
 
   \begin{figure}[H]
     \centering
@@ -114,7 +114,7 @@
     \label{fig:prio_list_2}
   \end{figure}
 
-  Este processo repete-se até só existir um elemento na lista de prioridade. Na \autoref{fig:final_huffman_tree_example} pode ver-se a árvore de Huffman final criada para este ficheiro.
+  Este processo repete-se até só existir um elemento na lista de prioridade. Na \autoref{fig:final_huffman_tree_example} encontra-se a árvore de Huffman final criada para este ficheiro.
 
 	\begin{figure}[H]
 		\centering
@@ -123,7 +123,7 @@
 		\label{fig:final_huffman_tree_example}
 	\end{figure}
 
-	Os códigos para cada carácter obtêm-se percorrendo a \textit{trie} da raiz até à folha que contem o respectivo carácter. Cada vez que se passa para um filho à esquerda adicionamos o bit 0 à codificação; cada vez que se segue para um filho à direita adiciona-se um bit com o valor 1. Assim, por exemplo o código de \texttt{A} é \texttt{0001}, o de \texttt{C} é \texttt{01} e o de \texttt{D} é \texttt{1}. É de notar que, tal como previsto, os caracteres que ocorrem menos vezes têm códigos mais curtos.
+	Os códigos para cada carácter obtêm-se percorrendo a \textit{trie} da raiz até à folha que contem o respectivo carácter. Cada vez que se passa para um filho à esquerda adiciona-se o bit 0 à codificação; cada vez que se segue para um filho à direita adiciona-se um bit com o valor 1. Assim, por exemplo o código de \texttt{A} é \texttt{0001}, o de \texttt{C} é \texttt{01} e o de \texttt{D} é \texttt{1}. É de notar que, tal como previsto, os caracteres que ocorrem menos vezes têm códigos mais curtos.
 
 	O ficheiro comprimido seria portanto \texttt{0001 001 001 01 01 01 1 0000}. De $11 \times 8 = 88$ bits - assumindo que é usada a representação ASCII - passou-se a 21 bits.
 
@@ -137,7 +137,7 @@
 
 	\paragraph{} Para obter a frequência absoluta de cada carácter do ficheiro é feito um varrimento do ficheiro e incrementado um contador relativo ao número de ocorrências desse carácter. Isto é feito até que seja encontrado o carácter terminador. Esse carácter está definido no programa como \texttt{FILE\_END\_CODE}. Ao longo desta parte do trabalho tem-se considerado como terminador o carácter \texttt{0x00}.
 
-	A razão pela qual é preciso escolher um carácter como terminador prende-se com o facto de não termos um sistema operativo a correr no MicroBlaze. Caso tivéssemos um sistema operativo ele podia notificar o programa quando não houvesse mais conteúdo para ler.
+	A razão pela qual é preciso escolher um carácter como terminador prende-se com o facto de não termos um sistema operativo a correr no MicroBlaze. Caso tivésse um sistema operativo ele podia notificar o programa quando não houvesse mais conteúdo para ler.
 
 	A complexidade desta fase do algoritmo é linear com o tamanho do ficheiro. Antes de se passar à construção da árvore, é construído um vector com pares (carácter, contagem), que não inclui caracteres com frequência absoluta nula. Na construção da árvore são portanto considerados apenas caracteres com pelo menos uma ocorrência. Isto resulta numa árvore mais pequena (menor \textit{overhead} no ficheiro comprimido) e torna a construção da árvore mais rápida.
 
@@ -149,7 +149,7 @@
 
 	\subsection{Ficheiro de Saída}
 
-	\paragraph{} Percorrendo a árvore de Huffman é possível obter o código que corresponde a cada carácter. De forma a optimizar o processo de codificação do ficheiro, começamos por percorrer a árvore e construir uma tabela indexada pelos caracteres, e que em cada posição contem um par (código, comprimento), em que \emph{comprimento} é o número de bits do código. Recorrendo a esta tabela é agora possível aceder ao código de cada carácter em tempo constante.
+	\paragraph{} Percorrendo a árvore de Huffman é possível obter o código que corresponde a cada carácter. De forma a optimizar o processo de codificação do ficheiro, começa-se por percorrer a árvore e construir uma tabela indexada pelos caracteres, e que em cada posição contem um par (código, comprimento), em que \emph{comprimento} é o número de bits do código. Recorrendo a esta tabela é agora possível aceder ao código de cada carácter em tempo constante.
 
 	Para codificar o ficheiro resta agora substituir os caracteres do ficheiro pelos seus códigos. Esta operação não é assim tão trivial visto que a unidade mínima de memória que é possível endereçar é o byte. Por este motivo é necessário codificar vários caracteres para construir cada byte do ficheiro de saída. Isto implica uma série de operações lógicas (\textit{shifts} e \textit{ors}) e aritméticas que demoram uma quantidade apreciável de tempo, como se pode notar na secção~\nameref{sec:results}.
 
@@ -159,13 +159,12 @@
 	\label{sec:accelerator}
 
   \subsection{Motivos}
-  \paragraph{} As partes mais demoradas da implementação são a contagem da frequência absoluta dos caracteres e a codificação do ficheiro. O tempo da contagem cresce linearmente com o tamanho do ficheiro. Já a codificação do ficheiro aparenta também crescer linearmente com o tamanho do ficheiro, mas a relação deve ser mais complicada: nesta fase é preciso voltar a ler o ficheiro de entrada (tempo linear) e montar os bytes do ficheiro e saída. O tempo que se demora a montar bytes deverá ser tanto maior quanto melhor for a compressão conseguida: por exemplo, para um ficheiro em haja ocorrências apenas de um carácter serão necessárias 8 iterações que envolvem \textit{shifts}, \textit{ors} e operações aritméticas para montar cada byte. No caso patológico --- em que não se consegue qualquer compressão com codificação de Huffman --- de todos os 256 caracteres ocorrem no ficheiro, com frequências iguais, cada código teria 8 bits pelo que para montar cada byte bastaria 1 iteração.
+  \paragraph{} As partes mais demoradas da implementação são a contagem da frequência absoluta dos caracteres e a codificação do ficheiro. O tempo da contagem cresce linearmente com o tamanho do ficheiro. Já a codificação do ficheiro aparenta também crescer linearmente com o tamanho do ficheiro, mas a relação deve ser mais complicada: nesta fase é preciso voltar a ler o ficheiro de entrada (tempo linear) e montar os bytes do ficheiro e saída. O tempo que se demora a montar bytes deverá ser tanto maior quanto melhor for a compressão conseguida: por exemplo, para um ficheiro em que haja ocorrências apenas de um carácter serão necessárias 8 iterações que envolvem \textit{shifts}, \textit{ors} e operações aritméticas para montar cada byte. No caso patológico --- em que não se consegue qualquer compressão com codificação de Huffman --- de todos os 256 caracteres ocorrem no ficheiro, com frequências iguais, cada código teria 8 bits pelo que para montar cada byte bastaria 1 iteração.
 
-  Tendo em conta os resultados da \autoref{tab:time_software} escolhemos desenhar hardware para acelerar as estatísticas do ficheiro.
+  Tendo em conta os resultados da \autoref{tab:time_software} escolhe-se desenhar hardware para acelerar as estatísticas do ficheiro.
 
   \subsection{Datapath}
 
-  % Esta imagem está incompleta falta meter uns sinais e adicionar mais um porto de leitura
 	\begin{figure}[H]
 		\centering
 		\includegraphics[width=1.0\textwidth]{img/hw_datapath}
@@ -178,12 +177,12 @@
   \subsection{Máquina de Estados}
 	\begin{figure}[H]
 		\centering
-		%\includegraphics[width=.65\textwidth]{img/}
+		\includegraphics[width=1.0\textwidth]{img/fsm}
 		\caption{Máquina de Estados do acelerador}
 		\label{fig:hw_fsm}
 	\end{figure}
 
-
+  \paragraph{}
 
 	\section{Resultados}
 	\label{sec:results}
