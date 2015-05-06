@@ -24,7 +24,8 @@
         teste     & \ 1 ms    & \ 5 ms & 1 ms & \ 0 ms    & 28 B    \\ \hline
         pdf       & \ 1 ms    & \ 3 ms & 0 ms & \ 1 ms    & 44 B    \\ \hline
         read\_me  & 21 ms     & 12 ms  & 1 ms & 43 ms     & 2981 B  \\ \hline
-        BIG\_READ & 1,28 min. & 32 ms  & 3 ms & 2,66 min. & 10.4 MB \\
+        alice     & 1248 ms   & 32 ms  & 3 ms & 2611 ms   & 174 KB  \\ \hline
+        BIG\_READ & 76584 ms  & 32 ms  & 3 ms & 159882 ms & 10,4 MB \\
         \hline
       \end{tabular}
     }
@@ -46,11 +47,12 @@
       \textbf{Software}            &
       \textbf{Hardware/Software}   &
       \textbf{Speed Up}\\ \hline \hline
-      tmp        & \ 1 ms     & 1 ms              & 1,00         \\ \hline
-      teste      & \ 1 ms     & 1 ms              & 1,00         \\ \hline
-      pdf        & \ 1 ms     & 1 ms              & 1,00         \\ \hline
-      read\_me   & 21 ms      & 6 ms              & 3,50         \\ \hline
-      BIG\_READ  & 1,28 min.  & 19231 ms          & 901,45       \\
+      tmp        & \ 1 ms     & 1 ms     & 1,00   \\ \hline
+      teste      & \ 1 ms     & 1 ms     & 1,00   \\ \hline
+      pdf        & \ 1 ms     & 1 ms     & 1,00   \\ \hline
+      read\_me   & 21 ms      & 6 ms     & 3,50   \\ \hline
+      alice      & 1248 ms    & 314 ms   & 3,97   \\ \hline
+      BIG\_READ  & 76584 ms   & 19231 ms & 901,45 \\
       \hline
     \end{tabular}
     \label{tab:time_hardware}
@@ -71,11 +73,12 @@
         \multicolumn{1}{c|}{\textbf{Original}}            &
         \multicolumn{1}{c|}{\textbf{Comprimido}}          &
         \multicolumn{1}{c|}{\textbf{Rácio}}\\ \hline \hline
-        tmp        &  13  B     &  11 B             & 85,0\%     \\ \hline
-        teste      &  27  B     &  49 B             & 181,5\%    \\ \hline
-        pdf        &  43  B     &  39 B             & 90,7\%     \\ \hline
-        read\_me   &  3  KB     &  1,62 KB          & 54,0\%     \\ \hline
-        BIG\_READ  &  10,4 MB   &  5,99 MB          & 57,6\%     \\
+        tmp        &  13,0  B    &  11,00 B          & 85,0\%     \\ \hline
+        teste      &  27,0  B    &  49,00 B          & 181,5\%    \\ \hline
+        pdf        &  43,0  B    &  39,00 B          & 90,7\%     \\ \hline
+        read\_me   &  3,0  KB    &  1,62 KB          & 54,0\%     \\ \hline
+        alice      &  174,0 KB   &  103,79 KB        & 59,6\%     \\ \hline
+        BIG\_READ  &  10,4 MB    &  5,99 MB          & 57,6\%     \\
         \hline
     \end{tabular}
     \label{tab:compression}
