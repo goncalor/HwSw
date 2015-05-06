@@ -87,7 +87,7 @@
 
 	\subsection*{Exemplo}
 
-	Tome-se como exemplo o ficheiro \texttt{ABBCCCDDDD<EOF>}, em que \texttt{<EOF>} é o carácter terminador do ficheiro. As estatísticas do ficheiro são as seguintes: \texttt{\{A: 1, B: 2, C: 3, D: 4, <EOF>: 1\}}. A partir das estatísticas retiradas do ficheiro é gerada uma lista de prioridade. Na \autoref{fig:prio_list} apresenta-se a lista obtida.
+	\paragraph{} Tome-se como exemplo o ficheiro \texttt{ABBCCCDDDD<EOF>}, em que \texttt{<EOF>} é o carácter terminador do ficheiro. As estatísticas do ficheiro são as seguintes: \texttt{\{A: 1, B: 2, C: 3, D: 4, <EOF>: 1\}}. A partir das estatísticas retiradas do ficheiro é gerada uma lista de prioridade. Na \autoref{fig:prio_list} apresenta-se a lista obtida.
 
   \begin{figure}[H]
     \centering
@@ -131,11 +131,11 @@
 
 	\section{Software}
 
-	Nesta secção é descrita a implementação por software.
+	\paragraph{} Nesta secção é descrita a implementação por software.
 
 	\subsection{Estatísticas do Ficheiro}
 
-	Para obter a frequência absoluta de cada carácter do ficheiro é feito um varrimento do ficheiro e incrementado um contador relativo ao número de ocorrências desse carácter. Isto é feito até que seja encontrado o carácter terminador. Esse carácter está definido no programa como \texttt{FILE\_END\_CODE}. Ao longo desta parte do trabalho tem-se considerado como terminador o carácter \texttt{0x00}.
+	\paragraph{} Para obter a frequência absoluta de cada carácter do ficheiro é feito um varrimento do ficheiro e incrementado um contador relativo ao número de ocorrências desse carácter. Isto é feito até que seja encontrado o carácter terminador. Esse carácter está definido no programa como \texttt{FILE\_END\_CODE}. Ao longo desta parte do trabalho tem-se considerado como terminador o carácter \texttt{0x00}.
 
 	A razão pela qual é preciso escolher um carácter como terminador prende-se com o facto de não termos um sistema operativo a correr no MicroBlaze. Caso tivéssemos um sistema operativo ele podia notificar o programa quando não houvesse mais conteúdo para ler.
 
@@ -143,13 +143,13 @@
 
 	\subsection{Árvore}
 
-	Tal como visto na Secção~\ref{sec:theory} uma operação muito frequente durante a construção da árvore de Huffman é encontrar as duas raízes que em cada momento têm menor frequência absoluta. De forma a acelerar estas procuras, fez-se a implementação da árvore recorrendo a um acervo (\textit{heap}) que contém apontadores para os nós da árvore. O acervo é construído com complexidade $O(n)$, permite remoção do elemento com menor frequência em $O(log\ n)$ e inserção também $O(n)$, em que $n$ é o número de elementos, sendo que neste caso temos $n \leq 256$.
+	\paragraph{} Tal como visto na Secção~\ref{sec:theory} uma operação muito frequente durante a construção da árvore de Huffman é encontrar as duas raízes que em cada momento têm menor frequência absoluta. De forma a acelerar estas procuras, fez-se a implementação da árvore recorrendo a um acervo (\textit{heap}) que contém apontadores para os nós da árvore. O acervo é construído com complexidade $O(n)$, permite remoção do elemento com menor frequência em $O(log\ n)$ e inserção também $O(n)$, em que $n$ é o número de elementos, sendo que neste caso temos $n \leq 256$.
 
 	Por cada dois elementos (nós) que são removidos do acervo é adicionado um novo com frequência igual à soma das frequências dos que foram removidos. Os nós removidos são depois ``pendurados'' debaixo do novo nó. Assim sendo, cada elemento do acervo é na verdade uma árvore. Quando o acervo tiver apenas um elemento temos certeza de que esse constitui a árvore de Huffman. Note-se que por cada dois elementos que são removidos é adicionado apenas um, pelo que construir a árvore de Huffman demora, no máximo, 255 passos.
 
 	\subsection{Ficheiro de Saída}
 
-	Percorrendo a árvore de Huffman é possível obter o código que corresponde a cada carácter. De forma a optimizar o processo de codificação do ficheiro, começamos por percorrer a árvore e construir uma tabela indexada pelos caracteres, e que em cada posição contem um par (código, comprimento), em que \emph{comprimento} é o número de bits do código. Recorrendo a esta tabela é agora possível aceder ao código de cada carácter em tempo constante.
+	\paragraph{} Percorrendo a árvore de Huffman é possível obter o código que corresponde a cada carácter. De forma a optimizar o processo de codificação do ficheiro, começamos por percorrer a árvore e construir uma tabela indexada pelos caracteres, e que em cada posição contem um par (código, comprimento), em que \emph{comprimento} é o número de bits do código. Recorrendo a esta tabela é agora possível aceder ao código de cada carácter em tempo constante.
 
 	Para codificar o ficheiro resta agora substituir os caracteres do ficheiro pelos seus códigos. Esta operação não é assim tão trivial visto que a unidade mínima de memória que é possível endereçar é o byte. Por este motivo é necessário codificar vários caracteres para construir cada byte do ficheiro de saída. Isto implica uma série de operações lógicas (\textit{shifts} e \textit{ors}) e aritméticas que demoram uma quantidade apreciável de tempo, como se pode notar na secção~\nameref{sec:results}.
 
@@ -178,11 +178,11 @@
 	\section{Resultados}
 	\label{sec:results}
 
-	Nesta seccção são apresentados os resultados temporais e de compressão de vários ficheiros de exemplo. Nos resultados temporais compara-se o desempenho da implementação puramente em software com a solução com aceleração por hardware.
+	\paragraph{} Nesta seccção são apresentados os resultados temporais e de compressão de vários ficheiros de exemplo. Nos resultados temporais compara-se o desempenho da implementação puramente em software com a solução com aceleração por hardware.
 
 	\subsection{Temporais}
 
-	Na \autoref{tab:time_software} estão patentes os tempos de execução da implementação totalmente em software do algoritmo de compressão. Pode-se notar que existem dois passos que correm em tempo praticamente constante: construir a árvore e transformar a árvore numa tabela. Embora o tempo destes passos não seja constante, é proporcional ao número de caracteres distintos existentes no ficheiro; e consequentemente é limitado superiormente. Este é o motivo pelo qual as operações sobre a árvore para o ficheiro \texttt{pdf} demoram menos tempo do que para \texttt{teste}: o ficheiro \texttt{teste} tem 25 caracteres distintos enquanto que \texttt{pdf} tem apenas 14, logo as operações sobre a árvore demoram mais tempo para o primeiro.
+	\paragraph{} Na \autoref{tab:time_software} estão patentes os tempos de execução da implementação totalmente em software do algoritmo de compressão. Pode-se notar que existem dois passos que correm em tempo praticamente constante: construir a árvore e transformar a árvore numa tabela. Embora o tempo destes passos não seja constante, é proporcional ao número de caracteres distintos existentes no ficheiro; e consequentemente é limitado superiormente. Este é o motivo pelo qual as operações sobre a árvore para o ficheiro \texttt{pdf} demoram menos tempo do que para \texttt{teste}: o ficheiro \texttt{teste} tem 25 caracteres distintos enquanto que \texttt{pdf} tem apenas 14, logo as operações sobre a árvore demoram mais tempo para o primeiro.
 
 
 	\begin{table}[h]
@@ -244,6 +244,8 @@
 	\section{Dificuldades}
 
 	\section{Conclusão}
+
+  \pagebreak
 
   \listoffigures
   \listoftables
