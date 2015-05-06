@@ -7,6 +7,8 @@
 %\usepackage{rotating}
 \usepackage{float}
 \usepackage[]{tocbibind}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
 
 \begin{document}
 	\trSetImage{img/tecnico_logo}{6cm} % Logotipo do Técnico
@@ -182,7 +184,11 @@
 		\label{fig:hw_fsm}
 	\end{figure}
 
-  \paragraph{}
+  \paragraph{} A máquina de estados apresentada na \autoref{fig:hw_fsm} é iniciada com o sinal \texttt{FSL\_Reset} e fica presa no estado \texttt{s\_initial} até dados se encontrarem na \texttt{FSL} e ter recebido o caracter terminador (\texttt{<EOF>}). Este é enviado em simultâneo com o sinal de controlo.
+
+  O primeiro estado de contagem, \texttt{s\_count\_1\_special}, é especial pois não tem nenhum caracter anterior com que comparar. Os restantes estados têm que comparar com o caracter anterior e geram a palavra de selector do \texttt{MUX} conforme o caracter que pretendem ler.
+
+  Quando o caracter terminador é encontrado o próximo estado vai ser o \texttt{s\_report}. Neste estado é escrito o conteúdo total da \texttt{BRAM} para o \texttt{FSL}, como cada contagem são 16 bits é possível escrever 2 contagens em simultâneo, repetindo-se 128 vezes.
 
 	\section{Resultados}
 	\label{sec:results}
@@ -213,7 +219,7 @@
 				teste       & \ 1 ms          & 5 ms           & 1 ms         & \ 0 ms          & 28 B         \\ \hline
 				pdf         & \ 1 ms          & 3 ms           & 0 ms         & \ 1 ms          & 44 B         \\ \hline
 				read\_me    & 21 ms           & 12 ms          & 1 ms         & 43 ms           & 2981 B       \\ \hline
-				BIG\_READ   & 1.28 min.       & 32 ms          & 3 ms         & 2.66 min.       & 10.4 MB      \\
+				BIG\_READ   & 1,28 min.       & 32 ms          & 3 ms         & 2,66 min.       & 10.4 MB      \\
 				\hline
 			\end{tabular}
 		}
