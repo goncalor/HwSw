@@ -12,19 +12,19 @@
     {
       \begin{tabular}{|c|c|c|c|c|r|}
         \hline
-        ficheiro    &
-        estatísticas    &
-        construir árvore &
-        árvore $\rightarrow$ tabela
-        & codificação     &
-        \multicolumn{1}{c|}{tamanho} \\
+        \textbf{Ficheiro}                    &
+        \textbf{Estatísticas}                &
+        \textbf{Construir Árvore}            &
+        \textbf{Árvore $\rightarrow$ Tabela} &
+        \textbf{Codificação}                 &
+        \multicolumn{1}{c|}{\textbf{Tamanho}} \\
         \hline
         \hline
-        tmp         & \ 1 ms          & 0 ms           & 0 ms         & \ 0 ms          & 14 B         \\ \hline
-        teste       & \ 1 ms          & 5 ms           & 1 ms         & \ 0 ms          & 28 B         \\ \hline
-        pdf         & \ 1 ms          & 3 ms           & 0 ms         & \ 1 ms          & 44 B         \\ \hline
-        read\_me    & 21 ms           & 12 ms          & 1 ms         & 43 ms           & 2981 B       \\ \hline
-        BIG\_READ   & 1,28 min.       & 32 ms          & 3 ms         & 2,66 min.       & 10.4 MB      \\
+        tmp       & \ 1 ms    & \ 0 ms & 0 ms & \ 0 ms    & 14 B    \\ \hline
+        teste     & \ 1 ms    & \ 5 ms & 1 ms & \ 0 ms    & 28 B    \\ \hline
+        pdf       & \ 1 ms    & \ 3 ms & 0 ms & \ 1 ms    & 44 B    \\ \hline
+        read\_me  & 21 ms     & 12 ms  & 1 ms & 43 ms     & 2981 B  \\ \hline
+        BIG\_READ & 1,28 min. & 32 ms  & 3 ms & 2,66 min. & 10.4 MB \\
         \hline
       \end{tabular}
     }
@@ -38,19 +38,47 @@
 
   \begin{table}[H]
     \centering
-    \caption{Comparação das contagens \\em software e em hardware/software}
+    \caption{Comparação das contagens em software e em \\hardware/software tal como o seu Speed Up}
 
-    \begin{tabular}{|c|c|c|}
+    \begin{tabular}{|c|c|c|c|}
       \hline
-      ficheiro   & software   & hardware/software \\ \hline \hline
-      tmp        & \ 1 ms     & 1 ms         \\ \hline
-      teste      & \ 1 ms     & 1 ms         \\ \hline
-      pdf        & \ 1 ms     & 1 ms         \\ \hline
-      read\_me   & 21 ms      & ?          \\ \hline
-      BIG\_READ  & 1.28 min.  & ?         \\
+      \textbf{Ficheiro}            &
+      \textbf{Software}            &
+      \textbf{Hardware/Software}   &
+      \textbf{Speed Up}\\ \hline \hline
+      tmp        & \ 1 ms     & 1 ms              & 1,00         \\ \hline
+      teste      & \ 1 ms     & 1 ms              & 1,00         \\ \hline
+      pdf        & \ 1 ms     & 1 ms              & 1,00         \\ \hline
+      read\_me   & 21 ms      & 6 ms              & 3,50         \\ \hline
+      BIG\_READ  & 1,28 min.  & 19231 ms          & 901,45       \\
       \hline
     \end{tabular}
     \label{tab:time_hardware}
   \end{table}
 
-  % comentar a aceleração que foi conseguida
+  A partir dos resultados da \autoref{tab:time_hardware} não se nota uma grande aceleração com ficheiros de dimensão pequena mas com ficheiros de grandes dimensões, tal como \texttt{read\_me} e \texttt{BIG\_READ}, nota-se uma aceleração significativa na contagem de caracteres. Este facto provém da leitura do ficheiro ter complexidade de $O(n)$ - linear.
+
+  \subsection{Compressão}
+
+  A \autoref{tab:compression} apresenta o tamanho dos ficheiros teste comprimidos tal como os seus valores originais.
+
+  \begin{table}[H]
+    \centering
+    \caption{Compressões geradas para os ficheiros de teste}
+    \begin{tabular}{|c|r|r|r|}
+        \hline
+        \textbf{Ficheiro}                                 &
+        \multicolumn{1}{c|}{\textbf{Original}}            &
+        \multicolumn{1}{c|}{\textbf{Comprimido}}          &
+        \multicolumn{1}{c|}{\textbf{Rácio}}\\ \hline \hline
+        tmp        &  13  B     &  11 B             & 85,0\%     \\ \hline
+        teste      &  27  B     &  49 B             & 181,5\%    \\ \hline
+        pdf        &  43  B     &  39 B             & 90,7\%     \\ \hline
+        read\_me   &  3  KB     &  1,62 KB          & 54,0\%     \\ \hline
+        BIG\_READ  &  10,4 MB   &  5,99 MB          & 57,6\%     \\
+        \hline
+    \end{tabular}
+    \label{tab:compression}
+  \end{table}
+
+  A partir destes resultados pode-se afirmar que todos os ficheiros apresentam uma boa margem de compressão à excepção do ficheiro \texttt{teste}. Este é o caso extremo do algoritmo de Huffman, neste caso o ficheiro possui uma grande variedade de caracteres o que torna difícil a sua compressão pois a árvore gerada é muito equilibrada e muito profunda, ou seja, a representação dos caracteres a partir da árvore é maior do que a representação original ASCII. Por este motivo, o algoritmo, em vez de comprimir o ficheiro expandiu-o em 81,5\%.

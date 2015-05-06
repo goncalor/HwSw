@@ -23,7 +23,7 @@ O processo de criação da árvore de Huffman é:
 
 No final sobra apenas uma árvore que contém os nós correspondentes a cada símbolo. A localização desses nós na \textit{trie} dá-nos o código desse símbolo.
 
-\subsection*{Exemplo}
+\subsection{Exemplo}
 
 \paragraph{} Tome-se como exemplo o ficheiro \texttt{ABBCCCDDDD<EOF>}, em que \texttt{<EOF>} é o carácter terminador do ficheiro. As estatísticas do ficheiro são as seguintes: \texttt{\{A: 1, B: 2, C: 3, D: 4, <EOF>: 1\}}. A partir das estatísticas retiradas do ficheiro é gerada uma lista de prioridade. Na \autoref{fig:prio_list} apresenta-se a lista obtida.
 
@@ -65,4 +65,12 @@ Os códigos para cada carácter obtêm-se percorrendo a \textit{trie} da raiz at
 
 O ficheiro comprimido seria portanto \texttt{0001 001 001 01 01 01 1 0000}. De $11 \times 8 = 88$ bits - assumindo que é usada a representação ASCII - passou-se a 21 bits.
 
-No entanto, seria ainda necessário colocar no ficheiro uma representação da árvore para que o ficheiro pudesse ser descomprimido. A árvore poderia ser representada no ficheiro de saída como \texttt{00001 <EOF> 1 A 1 B 1 C 1 D}, em que \texttt{A}, \texttt{B}, \texttt{C}, \texttt{D} e \texttt{<EOF>} representam a codificação original do caracteres em ASCII. Assim, na realidade o ficheiro comprimido teria neste caso $21 + 9 + 5 \times 8 = 70$ bits, obtendo-se um rácio de compressão de $79,5\%$. Em ficheiros pequenos a inclusão da árvore tem um grande impacto, como se percebe por este exemplo. Em ficheiros grandes o \textit{overhead} da inclusão da árvore é desprezável.
+No entanto, seria ainda necessário colocar no ficheiro uma representação da árvore para que o ficheiro pudesse ser descomprimido. A árvore é representada no ficheiro de saída a partir de uma pesquisa de profundidade. Quando se chega ao último caracter é escrito a sua representação na árvore seguido da sua representação em ASCII, se não houver mais nenhuma ligação no nó sobe-se um nível e escreve-se a ligação tomada mais a representação ASCII do caracter. Este processo repete-se até se chegar à raiz da árvore: \\[5mm]
+\makebox[\textwidth]{\texttt{00001 00000000 1 10000001 1 10000010 1 10000011 1 10000100}.} \par
+\vspace{5mm}
+
+ Assim, na realidade o ficheiro comprimido teria neste caso $21 + 9 + 5 \times 8 = 70$ bits, obtendo-se um rácio de compressão de $79,5\%$. Em ficheiros pequenos a inclusão da árvore tem um grande impacto, como se percebe por este exemplo. Em ficheiros grandes o \textit{overhead} da inclusão da árvore é desprezável. Consequemente o ficheiro final comprimido em binário é: \\[5mm]
+\makebox[\textwidth]{\texttt{00001 00000000 1 10000001 1 10000010 1 10000011 1 10000100}} \par
+\makebox[\textwidth]{\texttt{0001 001 001 01 01 01 1 0000}.} \par
+\vspace{5mm}
+

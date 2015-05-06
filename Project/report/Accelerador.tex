@@ -1,5 +1,7 @@
+\paragraph{} Nesta secção propõem-se um circuito para acelerar a contagem de caracteres do ficheiro.
+
 \subsection{Motivos}
-  \paragraph{} As partes mais demoradas da implementação são a contagem da frequência absoluta dos caracteres e a codificação do ficheiro. O tempo da contagem cresce linearmente com o tamanho do ficheiro. Já a codificação do ficheiro aparenta também crescer linearmente com o tamanho do ficheiro, mas a relação deve ser mais complicada: nesta fase é preciso voltar a ler o ficheiro de entrada (tempo linear) e montar os bytes do ficheiro e saída. O tempo que se demora a montar bytes deverá ser tanto maior quanto melhor for a compressão conseguida: por exemplo, para um ficheiro em que haja ocorrências apenas de um carácter serão necessárias 8 iterações que envolvem \textit{shifts}, \textit{ors} e operações aritméticas para montar cada byte. No caso patológico --- em que não se consegue qualquer compressão com codificação de Huffman --- de todos os 256 caracteres ocorrem no ficheiro, com frequências iguais, cada código teria 8 bits pelo que para montar cada byte bastaria 1 iteração.
+  \paragraph{} As partes mais demoradas da implementação são a contagem da frequência absoluta dos caracteres e a codificação do ficheiro. O tempo da contagem cresce linearmente com o tamanho do ficheiro. Já a codificação do ficheiro aparenta também crescer linearmente com o tamanho do ficheiro, mas a relação deve ser mais complicada: nesta fase é preciso voltar a ler o ficheiro de entrada (tempo linear) e montar os bytes do ficheiro e saída. O tempo que se demora a montar bytes deverá ser tanto maior quanto melhor for a compressão conseguida: por exemplo, para um ficheiro em que haja ocorrências apenas de um carácter serão necessárias 8 iterações que envolvem \textit{shifts}, \textit{ORs} e operações aritméticas para montar cada byte. No caso patológico --- em que não se consegue qualquer compressão com codificação de Huffman --- de todos os 256 caracteres ocorrem no ficheiro, com frequências iguais, cada código teria 8 bits pelo que para montar cada byte bastaria 1 iteração.
 
   Tendo em conta os resultados da \autoref{tab:time_software} escolhe-se desenhar hardware para acelerar as estatísticas do ficheiro.
 
@@ -12,7 +14,7 @@
     \label{fig:hw_datapath}
   \end{figure}
 
-  \paragraph{} A \autoref{fig:hw_datapath} mostra a datapath usada no acelerador. Esta recebe 4 caracteres porque cada caracter são 8 bits e a \texttt{FSL} transporta 32 bits. O próprio caracter endereça a \texttt{BRAM}, o valor lido é incrementado e de seguida é guardado na \texttt{BRAM}. Caso exista dois caracters repetidos na palavra em vez de ser incrementado o valor da \texttt{BRAM} é incrementado o valor da contagem calculado anteriormente.
+  \paragraph{} A \autoref{fig:hw_datapath} mostra a datapath usada no acelerador. Esta recebe 4 caracteres porque cada caracter são 8 bits e a \texttt{FSL} transporta 32 bits, contém um incrementador e uma \texttt{BRAM} de 256 posições com 16 bits cada (512KB). O próprio caracter endereça a \texttt{BRAM}, o valor lido é incrementado e de seguida é guardado na \texttt{BRAM}. Caso exista dois caracters repetidos na palavra em vez de ser incrementado o valor da \texttt{BRAM} é incrementado o valor da contagem calculado anteriormente.
 
 \subsection{Máquina de Estados}
   \begin{figure}[H]
