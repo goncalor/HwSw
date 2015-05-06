@@ -6,3 +6,7 @@ outfile*
 Project/testes
 *.aux
 *.toc
+*.log
+*.lof
+*.lot
+*.toc
