@@ -4,3 +4,5 @@ huffman
 *.plist
 outfile*
 Project/testes
+*.aux
+*.toc
