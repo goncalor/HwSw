@@ -165,12 +165,15 @@
 
   \subsection{Datapath}
 
+  % Esta imagem está incompleta falta meter uns sinais e adicionar mais um porto de leitura
 	\begin{figure}[H]
 		\centering
-		%\includegraphics[width=.65\textwidth]{img/}
+		\includegraphics[width=1.0\textwidth]{img/hw_datapath}
 		\caption{Datapath do acelerador}
 		\label{fig:hw_datapath}
 	\end{figure}
+
+  \paragraph{} A \autoref{fig:hw_datapath} mostra a datapath usada no acelerador. Esta recebe 4 caracteres porque cada caracter são 8 bits e a \texttt{FSL} transporta 32 bits. O próprio caracter endereça a \texttt{BRAM}, o valor lido é incrementado e de seguida é guardado na \texttt{BRAM}. Caso exista dois caracters repetidos na palavra em vez de ser incrementado o valor da \texttt{BRAM} é incrementado o valor da contagem calculado anteriormente.
 
   \subsection{Máquina de Estados}
 	\begin{figure}[H]
@@ -192,7 +195,7 @@
 	\paragraph{} Na \autoref{tab:time_software} estão patentes os tempos de execução da implementação totalmente em software do algoritmo de compressão. Pode-se notar que existem dois passos que correm em tempo praticamente constante: construir a árvore e transformar a árvore numa tabela. Embora o tempo destes passos não seja constante, é proporcional ao número de caracteres distintos existentes no ficheiro; e consequentemente é limitado superiormente. Este é o motivo pelo qual as operações sobre a árvore para o ficheiro \texttt{pdf} demoram menos tempo do que para \texttt{teste}: o ficheiro \texttt{teste} tem 25 caracteres distintos enquanto que \texttt{pdf} tem apenas 14, logo as operações sobre a árvore demoram mais tempo para o primeiro.
 
 
-	\begin{table}[h]
+	\begin{table}[H]
 		\caption{Tempo de execução de cada parte do algoritmo, por software}
 
 		\centerline
@@ -223,7 +226,7 @@
 	O acelerador está descrito na Secção~\ref{sec:accelerator}. O tempo de execução da solução em software é comparado ao da solução hardware/software na \autoref{tab:time_hardware}.
 
 
-	\begin{table}
+	\begin{table}[H]
 		\centering
 		\caption{Comparação das contagens \\em software e em hardware/software}
 
