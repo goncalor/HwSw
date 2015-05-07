@@ -7,7 +7,7 @@ Nesta secção propõem-se um circuito para acelerar a contagem de caracteres do
 
   \subsection{Datapath}
 
-  \begin{figure}[h]
+  \begin{figure}[H]
     \centerline{
     	\includegraphics[width=0.65\paperwidth]{img/hw_datapath}
     }
@@ -18,7 +18,7 @@ Nesta secção propõem-se um circuito para acelerar a contagem de caracteres do
   A \autoref{fig:hw_datapath} mostra a datapath usada no acelerador. Esta recebe 4 caracteres (cada carácter tem 8 bits e a \texttt{FSL} tem largura de 32), contém um incrementador e uma \texttt{BRAM} de 256 posições com 16 bits cada (512~kB). O próprio carácter endereça a \texttt{BRAM}, o valor lido é incrementado e de seguida é guardado na \texttt{BRAM}. Caso exista dois caracteres repetidos na palavra em vez de ser incrementado o valor da \texttt{BRAM} é incrementado o valor da contagem calculado anteriormente.
 
 \subsection{Máquina de Estados}
-  \begin{figure}[h]
+  \begin{figure}[H]
     \centering
     \includegraphics[width=1.\textwidth]{img/fsm}
     \caption{Máquina de estados do acelerador}
