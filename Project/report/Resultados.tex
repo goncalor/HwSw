@@ -1,22 +1,23 @@
-\paragraph{} Nesta seccção são apresentados os resultados temporais e de compressão de vários ficheiros de exemplo. Nos resultados temporais compara-se o desempenho da implementação puramente em software com a solução com aceleração por hardware.
+Nesta seccção são apresentados os resultados temporais e de compressão de vários ficheiros de exemplo. Nos resultados temporais compara-se o desempenho da implementação puramente em software com a solução com aceleração por hardware.
 
 \subsection{Temporais}
 
-  \paragraph{} Na \autoref{tab:time_software} estão patentes os tempos de execução da implementação totalmente em software do algoritmo de compressão. Pode-se notar que existem dois passos que correm em tempo praticamente constante: construir a árvore e transformar a árvore numa tabela. Embora o tempo destes passos não seja constante, é proporcional ao número de caracteres distintos existentes no ficheiro; e consequentemente é limitado superiormente. Este é o motivo pelo qual as operações sobre a árvore para o ficheiro \texttt{pdf} demoram menos tempo do que para \texttt{teste}: o ficheiro \texttt{teste} tem 25 caracteres distintos enquanto que \texttt{pdf} tem apenas 14, logo as operações sobre a árvore demoram mais tempo para o primeiro.
+  Na \autoref{tab:time_software} estão patentes os tempos de execução da implementação totalmente em software do algoritmo de compressão. Pode-se notar que existem dois passos que correm em tempo praticamente constante: construir a árvore e transformar a árvore numa tabela. Embora o tempo destes passos não seja constante, é proporcional ao número de caracteres distintos existentes no ficheiro; e consequentemente é limitado superiormente. Este é o motivo pelo qual as operações sobre a árvore para o ficheiro \texttt{pdf} demoram menos tempo do que para \texttt{teste}: o ficheiro \texttt{teste} tem 25 caracteres distintos enquanto que \texttt{pdf} tem apenas 14, logo as operações sobre a árvore demoram mais tempo para o primeiro.
+
+  O acelerador é descrito na Secção~\ref{sec:accelerator}. O tempo de execução da solução em software é comparado ao da solução hardware/software na \autoref{tab:time_hardware}. Através desta tabela notamos que a aceleração conseguida é significativa: a solução por hardware é cerca de 4 vezes mais rápida. Para os ficheiros mais pequenos não houve aceleração, ou a mesma foi escondida por os tempos medidos não serem mais precisos.
 
 
-  \begin{table}[H]
+  \begin{table}[h]
     \caption{Tempo de execução de cada parte do algoritmo, por software}
-
     \centerline
     {
-      \begin{tabular}{|c|c|c|c|c|r|}
+      \begin{tabular}{|c|r|c|c|r|r|}
         \hline
-        \textbf{Ficheiro}                    &
-        \textbf{Estatísticas}                &
-        \textbf{Construir Árvore}            &
-        \textbf{Árvore $\rightarrow$ Tabela} &
-        \textbf{Codificação}                 &
+        \textbf{Ficheiro}                             &
+        \multicolumn{1}{c|}{\textbf{Estatísticas}}    &
+        \textbf{Construir Árvore}                     &
+        \textbf{Árvore $\rightarrow$ Tabela}          &
+        \multicolumn{1}{c|}{\textbf{Codificação}}     &
         \multicolumn{1}{c|}{\textbf{Tamanho}} \\
         \hline
         \hline
@@ -34,37 +35,34 @@
   \end{table}
 
 
-  O acelerador está descrito na Secção~\ref{sec:accelerator}. O tempo de execução da solução em software é comparado ao da solução hardware/software na \autoref{tab:time_hardware}.
 
-
-  \begin{table}[H]
+  \begin{table}[h]
     \centering
-    \caption{Comparação das contagens em software e em \\hardware/software tal como o seu Speed Up}
+    \caption{Comparação das contagens em software e em \\hardware/software e respectivo \textit{speedup}}
 
-    \begin{tabular}{|c|c|c|c|}
+    \begin{tabular}{|c|r|r|r|}
       \hline
-      \textbf{Ficheiro}            &
-      \textbf{Software}            &
-      \textbf{Hardware/Software}   &
-      \textbf{Speed Up}\\ \hline \hline
+      \textbf{Ficheiro}                                 &
+      \multicolumn{1}{c|}{\textbf{Software}}            &
+      \multicolumn{1}{c|}{\textbf{Hardware/Software}}   &
+      \multicolumn{1}{c|}{\textbf{Speedup}}       \\ \hline \hline
       tmp        & \ 1 ms     & 1 ms     & 1,00   \\ \hline
       teste      & \ 1 ms     & 1 ms     & 1,00   \\ \hline
       pdf        & \ 1 ms     & 1 ms     & 1,00   \\ \hline
       read\_me   & 21 ms      & 6 ms     & 3,50   \\ \hline
       alice      & 1248 ms    & 314 ms   & 3,97   \\ \hline
-      BIG\_READ  & 76584 ms   & 19231 ms & 901,45 \\
+      BIG\_READ  & 76584 ms   & 19231 ms & 3,98   \\
       \hline
     \end{tabular}
     \label{tab:time_hardware}
   \end{table}
 
-  A partir dos resultados da \autoref{tab:time_hardware} não se nota uma grande aceleração com ficheiros de dimensão pequena mas com ficheiros de grandes dimensões, tal como \texttt{read\_me} e \texttt{BIG\_READ}, nota-se uma aceleração significativa na contagem de caracteres. Este facto provém da leitura do ficheiro ter complexidade de $O(n)$ - linear.
 
   \subsection{Compressão}
 
-  A \autoref{tab:compression} apresenta o tamanho dos ficheiros teste comprimidos tal como os seus valores originais.
+  A \autoref{tab:compression} apresenta o tamanho dos ficheiros de teste após compressão, bem como os seus tamanhos originais.
 
-  \begin{table}[H]
+  \begin{table}[h]
     \centering
     \caption{Compressões geradas para os ficheiros de teste}
     \begin{tabular}{|c|r|r|r|}
@@ -84,4 +82,4 @@
     \label{tab:compression}
   \end{table}
 
-  A partir destes resultados pode-se afirmar que todos os ficheiros apresentam uma boa margem de compressão à excepção do ficheiro \texttt{teste}. Este é o caso extremo do algoritmo de Huffman, neste caso o ficheiro possui uma grande variedade de caracteres o que torna difícil a sua compressão pois a árvore gerada é muito equilibrada e muito profunda, ou seja, a representação dos caracteres a partir da árvore é maior do que a representação original ASCII. Por este motivo, o algoritmo, em vez de comprimir o ficheiro expandiu-o em 81,5\%.
+  A partir destes resultados pode-se afirmar que todos os ficheiros apresentam uma boa razão de compressão, à excepção do ficheiro \texttt{teste}. Este é um caso extremo do algoritmo de Huffman: neste caso o ficheiro possui uma variedade significativa de caracteres, o que aliado ao seu tamanho reduzido torna difícil a sua compressão visto que a árvore gerada é relativamente grande e, consequentemente, o cabeçalho gerado para o ficheiro comprimido representa um grande \textit{overhead}. Por este motivo, o algoritmo, em vez de comprimir o ficheiro expandiu-o em 81,5\%.

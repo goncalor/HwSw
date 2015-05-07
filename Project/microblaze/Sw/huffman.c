@@ -195,6 +195,7 @@ int main(int argc, char **argv)
 	#ifndef MB
 	printf("\tSize of compressed file (bits): %d\n", bits);
 	printf("\tSize of compressed file (bytes): %u (without header)\n", outbuf_len);
+  printf("SIZEOF: %lu\n", sizeof(heap_nodes));
 	#else
 	xil_printf("\tSize of compressed file (bits): %d\n", bits);
 	xil_printf("\tSize of compressed file (bytes): %d (without header)\n", outbuf_len);

@@ -18,10 +18,13 @@
 
 	\section{Codificação de Huffman}
 	\label{sec:theory}
-  \input{cod_huffman.tex}
+  \input{Huffman.tex}
 
 	\section{Software}
   \input{Software.tex}
+
+  \section{Sistema}
+  \input{Sistema.tex}
 
 	\section{Acelerador}
 	\label{sec:accelerator}
@@ -40,8 +43,14 @@
   \listoftables
 
 	% references
-  \input{References.tex}
+    \nocite{*}
+	\bibliographystyle{plain}
+	\bibliography{refs} % no spaces between commas
+
+
+  \pagebreak
 
   % anexo com as tabelas raw do acelerador
+  \input{appendix.tex}
 
 \end{document}

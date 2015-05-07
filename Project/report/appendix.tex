@@ -1,0 +1,28 @@
+\appendix
+
+  \section{Tabela Auxiliar}
+
+  \begin{table}[H]
+    \caption{Tempo de execução de cada parte do algoritmo, \\com acelerador por hardware}
+
+    \centerline
+    {
+      \begin{tabular}{|c|r|c|c|r|}
+        \hline
+        \textbf{Ficheiro}                             &
+        \multicolumn{1}{c|}{\textbf{Estatísticas}}    &
+        \textbf{Construir Árvore}                     &
+        \textbf{Árvore $\rightarrow$ Tabela}          &
+        \multicolumn{1}{c|}{\textbf{Codificação}}         \\ \hline \hline
+        tmp       & \ 1 ms    & \ 0 ms & 0 ms & \ 0 ms    \\ \hline
+        teste     & \ 1 ms    & \ 5 ms & 1 ms & \ 0 ms    \\ \hline
+        pdf       & \ 1 ms    & \ 3 ms & 0 ms & \ 1 ms    \\ \hline
+        read\_me  & 6 ms      & 12 ms  & 1 ms & 43 ms     \\ \hline
+        alice     & 314 ms    & 32 ms  & 3 ms & 2611 ms   \\ \hline
+        BIG\_READ & 19231 ms  & 32 ms  & 3 ms & 159882 ms \\
+        \hline
+      \end{tabular}
+    }
+
+    \label{tab:time_hardware_all}
+  \end{table}
