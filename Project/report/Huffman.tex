@@ -5,7 +5,7 @@ Os passos necessários ao algoritmo de compressão são os seguintes:
 \begin{enumerate}
   \item obter as frequências absolutas de cada símbolo
   \item construir uma árvore de Huffman
-  \item codificar os dados
+  \item codificar os dados.
 \end{enumerate}
 
 O primeiro passo consiste em contar o número de ocorrências de cada símbolo até encontrar o fim do ficheiro. O segundo passo é criar uma \emph{trie} a partir das frequências obtidas no primeiro passo. Por último o ficheiro é comprimido fazendo uso da árvore criada.
@@ -25,16 +25,16 @@ No final sobra apenas uma árvore que contém os nós correspondentes a cada sí
 
 \subsection{Exemplo}
 
-\paragraph{} Tome-se como exemplo o ficheiro \texttt{ABBCCCDDDD<EOF>}, em que \texttt{<EOF>} é o carácter terminador do ficheiro. As estatísticas do ficheiro são as seguintes: \texttt{\{A: 1, B: 2, C: 3, D: 4, <EOF>: 1\}}. A partir das estatísticas retiradas do ficheiro é gerada uma lista de prioridade. Na \autoref{fig:prio_list} apresenta-se a lista obtida.
+\paragraph{} Tome-se como exemplo o ficheiro \texttt{ABBCCCDDDD<EOF>}, em que \texttt{<EOF>} é o carácter terminador do ficheiro. As estatísticas do ficheiro são as seguintes: \texttt{\string{ A: 1, B: 2, C: 3, D: 4, <EOF>:\ 1 \string}}. A partir das estatísticas retiradas do ficheiro é gerada uma lista de prioridade. Na \autoref{fig:prio_list} apresenta-se a lista obtida.
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=.65\textwidth]{img/prio_list}
+  \includegraphics[width=.75\textwidth]{img/prio_list}
   \caption{Lista de prioridade gerada a partir das estatísticas}
   \label{fig:prio_list}
 \end{figure}
 
-De seguida retira-se os 2 elementos de menor prioridade da lista - neste caso \texttt{A} e \texttt{<EOF>} - e cria-se um novo nó que guarda a soma das suas frequências.
+De seguida retira-se os 2 elementos de menor prioridade da lista --- neste caso \texttt{A} e \texttt{<EOF>} --- e cria-se um novo nó que guarda a soma das suas frequências.
 
 \begin{figure}[H]
   \centering
@@ -63,14 +63,15 @@ Este processo repete-se até só existir um elemento na lista de prioridade. Na 
 
 Os códigos para cada carácter obtêm-se percorrendo a \textit{trie} da raiz até à folha que contem o respectivo carácter. Cada vez que se passa para um filho à esquerda adiciona-se o bit 0 à codificação; cada vez que se segue para um filho à direita adiciona-se um bit com o valor 1. Assim, por exemplo o código de \texttt{A} é \texttt{0001}, o de \texttt{C} é \texttt{01} e o de \texttt{D} é \texttt{1}. É de notar que, tal como previsto, os caracteres que ocorrem menos vezes têm códigos mais curtos.
 
-O ficheiro comprimido seria portanto \texttt{0001 001 001 01 01 01 1 0000}. De $11 \times 8 = 88$ bits - assumindo que é usada a representação ASCII - passou-se a 21 bits.
+O ficheiro comprimido seria portanto \texttt{0001 001 001 01 01 01 1 0000}. De $11 \times 8 = 88$ bits --- assumindo que é usada a representação ASCII --- passou-se a 21 bits.
 
-No entanto, seria ainda necessário colocar no ficheiro uma representação da árvore para que o ficheiro pudesse ser descomprimido. A árvore é representada no ficheiro de saída a partir de uma pesquisa de profundidade. Quando se chega ao último caracter é escrito a sua representação na árvore seguido da sua representação em ASCII, se não houver mais nenhuma ligação no nó sobe-se um nível e escreve-se a ligação tomada mais a representação ASCII do caracter. Este processo repete-se até se chegar à raiz da árvore: \\[5mm]
+No entanto, seria ainda necessário colocar no ficheiro uma representação da árvore para que o ficheiro pudesse ser descomprimido. A árvore é representada no ficheiro de saída a partir de uma pesquisa em profundidade: por cada nó interno é adicionado um 0 ao cabeçalho; quando se chega a uma folha adiciona-se um 1 seguido da representação ASCII do carácter \cite{crochemore:hal-00469994}. Este processo repete-se até se chegar à raiz da árvore. A árvore deste exemplo seria representada como: \\[5mm]
 \makebox[\textwidth]{\texttt{00001 00000000 1 10000001 1 10000010 1 10000011 1 10000100}.} \par
 \vspace{5mm}
 
- Assim, na realidade o ficheiro comprimido teria neste caso $21 + 9 + 5 \times 8 = 70$ bits, obtendo-se um rácio de compressão de $79,5\%$. Em ficheiros pequenos a inclusão da árvore tem um grande impacto, como se percebe por este exemplo. Em ficheiros grandes o \textit{overhead} da inclusão da árvore é desprezável. Consequemente o ficheiro final comprimido em binário é: \\[5mm]
+ Assim, na realidade o ficheiro comprimido teria neste caso $21 + 9 + 5 \times 8 = 70$ bits, obtendo-se uma razão de compressão de $79,5\%$. Em ficheiros pequenos a inclusão da árvore tem um grande impacto, como se percebe por este exemplo. Em ficheiros grandes o \textit{overhead} da inclusão da árvore é desprezável.
+ 
+ O ficheiro comprimido seria: \\[5mm]
 \makebox[\textwidth]{\texttt{00001 00000000 1 10000001 1 10000010 1 10000011 1 10000100}} \par
 \makebox[\textwidth]{\texttt{0001 001 001 01 01 01 1 0000}.} \par
-\vspace{5mm}
 
