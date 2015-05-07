@@ -1,4 +1,4 @@
-\paragraph{} A codificação de Huffman é um método de compressão que consiste em encontrar uma representação alternativa --- um \emph{código} --- para cada \emph{símbolo} do alfabeto dos dados a comprimir. A compressão resulta do facto de o código escolhido para um dado símbolo ser tanto mais curto quanto maior for a frequência absoluta desse símbolo nos dados. A símbolos mais raros são atribuídos códigos mais longos. Os códigos encontrados têm uma propriedade importante: nenhum código é prefixo de outro código. Isto permite que durante o processo de descompressão não haja qualquer ambiguidade.
+A codificação de Huffman é um método de compressão que consiste em encontrar uma representação alternativa --- um \emph{código} --- para cada \emph{símbolo} do alfabeto dos dados a comprimir. A compressão resulta do facto de o código escolhido para um dado símbolo ser tanto mais curto quanto maior for a frequência absoluta desse símbolo nos dados. A símbolos mais raros são atribuídos códigos mais longos. Os códigos encontrados têm uma propriedade importante: nenhum código é prefixo de outro código. Isto permite que durante o processo de descompressão não haja qualquer ambiguidade.
 
 Os passos necessários ao algoritmo de compressão são os seguintes:
 
@@ -25,7 +25,7 @@ No final sobra apenas uma árvore que contém os nós correspondentes a cada sí
 
 \subsection{Exemplo}
 
-\paragraph{} Tome-se como exemplo o ficheiro \texttt{ABBCCCDDDD<EOF>}, em que \texttt{<EOF>} é o carácter terminador do ficheiro. As estatísticas do ficheiro são as seguintes: \texttt{\string{ A: 1, B: 2, C: 3, D: 4, <EOF>:\ 1 \string}}. A partir das estatísticas retiradas do ficheiro é gerada uma lista de prioridade. Na \autoref{fig:prio_list} apresenta-se a lista obtida.
+Tome-se como exemplo o ficheiro \texttt{ABBCCCDDDD<EOF>}, em que \texttt{<EOF>} é o carácter terminador do ficheiro. As estatísticas do ficheiro são as seguintes: \texttt{\string{ A: 1, B: 2, C: 3, D: 4, <EOF>:\ 1 \string}}. A partir das estatísticas retiradas do ficheiro é gerada uma lista de prioridade. Na \autoref{fig:prio_list} apresenta-se a lista obtida.
 
 \begin{figure}[H]
   \centering
