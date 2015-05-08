@@ -1,3 +1,17 @@
 O sistema opera a 75MHz e possui uma memória local de 8~kB, 2 \texttt{AXI~Timers} de 32 bits ligados em cascata --- que resulta num \textit{timer} de 64 bits --- e duas \textit{caches} de 8~kB --- uma para dados e outra para instruções. A memória externa está ligada através do \textit{bus} AXI4, de maneira a tomar partido da \textit{cache} de dados e instruções.
 
 Não foi feita qualquer optimização ao sistema de modo a melhor acomodar a aplicação. Assim, o programa não cabe na memória local e tem que ser carregado na memória externa. A \textit{stack} também foi modificada pois a pesquisa na árvore é feita recursivamente. Como no pior caso a árvore tem 256 níveis podem ser ocupados aproximadamente $256 \times (4 + 4 + 4) = 3072$ B em \textit{stack}, visto que cada chamada recursiva usa dois ponteiros mais um \texttt{char} e \texttt{short} --- assumindo que são usados 4 bytes devido a alinhamentos. Contabilizando outros dados que são colocados na \textit{stack} por cada chamada, estima-se que o tamanho da \textit{stack} possa chegar a cerca de 5~kB. Para ter margem de segurança definiu-se no \textit{linker script} uma \textit{stack} com o número redondo de 10~kB.
+
+Alguns valores relativos à ocupação do sistema (valor absoluto e percentagem de ocupação) são:
+
+\begin{verbatim}
+    Slice registers                2850        5 %
+    Slice LUTs                     3746       13 %
+       used as Memory               422
+    occupied Slices                1515       22 %
+    LUT Flip Flop pairs used       4414
+    RAMB16BWERs                    14         12 %
+    RAMB8BWERs                     0           0 %
+    DSP48A1s                       3           5 %
+\end{verbatim}
+

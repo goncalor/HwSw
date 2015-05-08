@@ -4,10 +4,12 @@ Nesta seccção são apresentados os resultados temporais e de compressão de v�
 
   Na \autoref{tab:time_software} estão patentes os tempos de execução da implementação totalmente em software do algoritmo de compressão. Pode-se notar que existem dois passos que correm em tempo praticamente constante: construir a árvore e transformar a árvore numa tabela. Embora o tempo destes passos não seja constante, é proporcional ao número de caracteres distintos existentes no ficheiro; e consequentemente é limitado superiormente. Este é o motivo pelo qual as operações sobre a árvore para o ficheiro \texttt{pdf} demoram menos tempo do que para \texttt{teste}: o ficheiro \texttt{teste} tem 25 caracteres distintos enquanto que \texttt{pdf} tem apenas 14, logo as operações sobre a árvore demoram mais tempo para o primeiro.
 
-  O acelerador é descrito na Secção~\ref{sec:accelerator}. O tempo de execução da solução em software é comparado ao da solução hardware/software na \autoref{tab:time_hardware}. Através desta tabela notamos que a aceleração conseguida é significativa: a solução por hardware é cerca de 4 vezes mais rápida. Para os ficheiros mais pequenos não houve aceleração, ou a mesma foi escondida por os tempos medidos não serem mais precisos.
+  O acelerador é descrito na Secção~\ref{sec:accelerator}. O tempo de execução das estatísticas por software é comparado ao da solução hardware/software na \autoref{tab:time_hardware}. Através desta tabela notamos que a aceleração conseguida é significativa: a parte do algoritmo que foi acelerada por hardware é agora cerca de 4 vezes mais rápido. Isto resulta em que a solução que incorpora o acelerador é 1,32 vezes mais rápida do que a solução puramente por software, como se verifica pela\autoref{tab:speedup_total}. Para os ficheiros mais pequenos não houve aceleração, ou a mesma foi escondida por os tempos medidos não serem mais precisos.
+  
+  \paragraph*{Nota:} a compilação foi feita com a \textit{flag} \texttt{-o0}, em todos os casos.
 
 
-  \begin{table}[h]
+  \begin{table}[p]
     \caption{Tempo de execução de cada parte do algoritmo, por software}
     \centerline
     {
@@ -36,9 +38,9 @@ Nesta seccção são apresentados os resultados temporais e de compressão de v�
 
 
 
-  \begin{table}[h]
+  \begin{table}[p]
     \centering
-    \caption{Comparação das contagens em software e em \\hardware/software e respectivo \textit{speedup}}
+    \caption{Comparação das contagens (estatísticas) em software\\ e em hardware/software. Respectivo \textit{speedup}}
 
     \begin{tabular}{|c|r|r|r|}
       \hline
@@ -58,13 +60,38 @@ Nesta seccção são apresentados os resultados temporais e de compressão de v�
   \end{table}
 
 
+  \begin{table}[p]
+    \caption{Tempo de execução total e \\\textit{speedup} global para cada ficheiro}
+    \centerline
+    {
+      \begin{tabular}{|c|r|r|c|}
+        \hline
+        \textbf{Ficheiro}                                &
+        \multicolumn{1}{c|}{\textbf{Hardware}}           &
+		\multicolumn{1}{c|}{\textbf{Hardware/Software}}  &
+        \textbf{Speedup}                            \\ \hline \hline
+		tmp       &      1 ms   &      1 ms & 1,00  \\ \hline
+        teste     &      7 ms   &      7 ms & 1,00  \\ \hline
+        pdf       &      5 ms   &      5 ms & 1,00  \\ \hline
+        read\_me  &     77 ms   &     62 ms & 1,24  \\ \hline
+        alice     &   3894 ms   &   2960 ms & 1,32  \\ \hline
+        BIG\_READ & 236501 ms   & 179148 ms & 1,32  \\
+        \hline
+      \end{tabular}
+    }
+
+    \label{tab:speedup_total}
+  \end{table}
+
+
+
   \subsection{Compressão}
 
   A \autoref{tab:compression} apresenta o tamanho dos ficheiros de teste após compressão, bem como os seus tamanhos originais.
 
-  \begin{table}[h]
+  \begin{table}[p]
     \centering
-    \caption{Compressões geradas para os ficheiros de teste}
+    \caption{Compressões conseguidas para os ficheiros de teste}
     \begin{tabular}{|c|r|r|r|}
         \hline
         \textbf{Ficheiro}                                 &
