@@ -43,6 +43,7 @@ int main(int argc, char **argv)
 {
 	int i, j;
 	char ascii[256];
+  *sharedstate = 0x1;
 
 	#ifndef MB
 	char * file = malloc(MAX_FILE_SIZE*sizeof(char));
@@ -231,6 +232,10 @@ int main(int argc, char **argv)
 	tree_to_table(huffman_tree, encoding_table, 0, 1);
 
   // Sync with all cores
+  *sharedstate = 0x0;
+  while(*sharedstate != 0x1);
+
+  // Put table in internal memory
 
 	#ifdef MB
 	timeH[7] = get_timer64_val(&(timeL[7]));

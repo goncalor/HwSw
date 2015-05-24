@@ -167,10 +167,9 @@ int main(int argc, char **argv)
 	}
 	#endif
 
-  // Sync with core 1 (wait until table is built)
-  #if XPAR_CPU_ID != 0
-    while(*sharedstate != 0x0);
-  #endif
+  // Sync with core 0 (wait until table is built)
+  while(*sharedstate != 0x0);
+  *sharedstate = 0x1;
 
   // ponteiro para a memória externa com a tabela de
   // codificação completa.
