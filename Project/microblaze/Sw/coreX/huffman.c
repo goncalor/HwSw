@@ -41,6 +41,7 @@ volatile unsigned int *sharedstate = (unsigned int *)XPAR_AXI_BRAM_CTRL_0_S_AXI_
   char * base_addr = (char *) (0xa8000000);
 #else if XPAR_CPU_ID == 2
   char * base_addr = (char *) (0xa800003F);
+  char * base_addr3 = (char *) (0xa800007E);
 #else if XPAR_CPU_ID == 3
   char * base_addr = (char *) (0xa800007E);
 #endif
@@ -116,28 +117,39 @@ int main(int argc, char **argv)
 
 	stats[FILE_END_CODE] = 1;
 
+  char * section_aux = base_addr;
+
   #if XPAR_CPU_ID == 1
     // Send to core 0:
     // Write to memory section
     // Sync with core 0
+    for(i = 0; i < 256; i++){
+      section_aux = stats[i];
+      section_aux++;
+    }
     *sharedstate1 = 0x1;
     while(*sharedstate1 != 0x0);
-  #else if XPAR_CPU_ID == 0
-    while(*sharedstate1 != 0x1);
-    *sharedstate1 = 0x0;
-    // Add results from core 1 to core 0 and write to its memory section
   #endif
 
   #if XPAR_CPU_ID == 3
     // Send to core 3:
     // Write to memory section
     // Sync with core 3
+    for(i = 0; i < 256; i++){
+      *section_aux = stats[i];
+      section_aux++;
+    }
     *sharedstate2 = 0x1;
     while(*sharedstate2 != 0x0);
   #else if XPAR_CPU_ID == 2
     while(*sharedstate2 != 0x1);
     *sharedstate2 = 0x0;
     // Add results from core 3 to core 2 and write to its memory section
+    char * section_aux = base_addr3;
+    for(i = 0; i < 256; i++){
+      stats[i] += *section_aux;
+      section_aux++;
+    }
   #endif
 
 	#ifdef debug
