@@ -21,9 +21,7 @@ volatile unsigned int *sharedstate = (unsigned int *)XPAR_AXI_BRAM_CTRL_0_S_AXI_
 /**
  * Global to sync core 0 and 1
  */
-#if XPAR_CPU_ID == 0
-  volatile unsigned int *sharedstate1 = (unsigned int *)XPAR_AXI_BRAM_CTRL_0_S_AXI_BASEADDR + 1;
-#else if XPAR_CPU_ID == 1
+#if XPAR_CPU_ID == 1
   volatile unsigned int *sharedstate1 = (unsigned int *)XPAR_AXI_BRAM_CTRL_0_S_AXI_BASEADDR + 1;
 #endif
 
@@ -34,6 +32,17 @@ volatile unsigned int *sharedstate = (unsigned int *)XPAR_AXI_BRAM_CTRL_0_S_AXI_
   volatile unsigned int *sharedstate2 = (unsigned int *)XPAR_AXI_BRAM_CTRL_0_S_AXI_BASEADDR + 2;
 #else if XPAR_CPU_ID == 3
   volatile unsigned int *sharedstate2 = (unsigned int *)XPAR_AXI_BRAM_CTRL_0_S_AXI_BASEADDR + 2;
+#endif
+
+/**
+ * Base address to share results
+ */
+#if XPAR_CPU_ID == 1
+  char * base_addr = (char *) (0xa8000000);
+#else if XPAR_CPU_ID == 2
+  char * base_addr = (char *) (0xa800003F);
+#else if XPAR_CPU_ID == 3
+  char * base_addr = (char *) (0xa800007E);
 #endif
 
 /* We are either CPU1, CPU2, CPU3 or CPU4.
