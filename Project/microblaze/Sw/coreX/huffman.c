@@ -9,10 +9,31 @@
 #include "htimer.h"
 #include "fsl.h"
 
+/**
+ * Global to sync all cores
+ */
 #if XPAR_CPU_ID == 0
 volatile unsigned int *sharedstate = (unsigned int *)XPAR_AXI_BRAM_CTRL_0_S_AXI_BASEADDR;
 #else
 volatile unsigned int *sharedstate = (unsigned int *)XPAR_AXI_BRAM_CTRL_0_S_AXI_BASEADDR;
+#endif
+
+/**
+ * Global to sync core 0 and 1
+ */
+#if XPAR_CPU_ID == 0
+  volatile unsigned int *sharedstate1 = (unsigned int *)XPAR_AXI_BRAM_CTRL_0_S_AXI_BASEADDR + 1;
+#else if XPAR_CPU_ID == 1
+  volatile unsigned int *sharedstate1 = (unsigned int *)XPAR_AXI_BRAM_CTRL_0_S_AXI_BASEADDR + 1;
+#endif
+
+/**
+ * Global to sync core 2 and 3
+ */
+#if XPAR_CPU_ID == 2
+  volatile unsigned int *sharedstate2 = (unsigned int *)XPAR_AXI_BRAM_CTRL_0_S_AXI_BASEADDR + 2;
+#else if XPAR_CPU_ID == 3
+  volatile unsigned int *sharedstate2 = (unsigned int *)XPAR_AXI_BRAM_CTRL_0_S_AXI_BASEADDR + 2;
 #endif
 
 /* We are either CPU1, CPU2, CPU3 or CPU4.
@@ -58,11 +79,30 @@ int main(int argc, char **argv)
 	}
 
 	stats[FILE_END_CODE] = 1;
-	timeH[1] = get_timer64_val(&(timeL[1]));
 
-  // Send to core 3:
-  // Write to memory section
-  // Sync with core 3
+  #if XPAR_CPU_ID == 1
+    // Send to core 0:
+    // Write to memory section
+    // Sync with core 0
+    *sharedstate1 = 0x1;
+    while(*sharedstate1 != 0x0);
+  #else if XPAR_CPU_ID == 0
+    while(*sharedstate1 != 0x1);
+    *sharedstate1 = 0x0;
+    // Add results from core 1 to core 0 and write to its memory section
+  #endif
+
+  #if XPAR_CPU_ID == 3
+    // Send to core 3:
+    // Write to memory section
+    // Sync with core 3
+    *sharedstate2 = 0x1;
+    while(*sharedstate2 != 0x0);
+  #else if XPAR_CPU_ID == 2
+    while(*sharedstate2 != 0x1);
+    *sharedstate2 = 0x0;
+    // Add results from core 3 to core 2 and write to its memory section
+  #endif
 
 	#ifdef debug
 	for(i=0; i<256; i++){
@@ -71,11 +111,14 @@ int main(int argc, char **argv)
 	}
 	#endif
 
+  // Sync with core 1 (wait until table is built)
+  #if XPAR_CPU_ID != 0
+    while(*sharedstate != 0x0);
+  #endif
+
   // ponteiro para a memória externa com a tabela de
   // codificação completa.
   char *encoding_table = NULL;
-
-  // Sync with core 1 (wait until table is built)
 
 	// encode the buffer
 	unsigned outbuf_len = encode_file((char *)file, (char *)file, encoding_table);
