@@ -9,6 +9,19 @@
 #include "htimer.h"
 #include "fsl.h"
 
+#if XPAR_CPU_ID == 0
+volatile unsigned int *sharedstate = (unsigned int *)XPAR_AXI_BRAM_CTRL_0_S_AXI_BASEADDR;
+#else
+volatile unsigned int *sharedstate = (unsigned int *)XPAR_AXI_BRAM_CTRL_0_S_AXI_BASEADDR;
+#endif
+
+/* We are either CPU1, CPU2, CPU3 or CPU4.
+   Code below relies on the value being one of these 4 */
+#if XPAR_CPU_ID == 4
+#undef XPAR_CPU_ID
+#define XPAR_CPU_ID 3
+#endif
+
 int main(int argc, char **argv)
 {
 	int i, j;
