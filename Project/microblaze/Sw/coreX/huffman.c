@@ -12,9 +12,7 @@
 /**
  * Global to sync all cores
  */
-#if XPAR_CPU_ID == 0
-volatile unsigned int *sharedstate = (unsigned int *)XPAR_AXI_BRAM_CTRL_0_S_AXI_BASEADDR;
-#else
+#if XPAR_CPU_ID != 0
 volatile unsigned int *sharedstate = (unsigned int *)XPAR_AXI_BRAM_CTRL_0_S_AXI_BASEADDR;
 #endif
 
@@ -24,6 +22,11 @@ volatile unsigned int *sharedstate = (unsigned int *)XPAR_AXI_BRAM_CTRL_0_S_AXI_
 #if XPAR_CPU_ID == 1
   volatile unsigned int *sharedstate1 = (unsigned int *)XPAR_AXI_BRAM_CTRL_0_S_AXI_BASEADDR + 1;
 #endif
+
+/**
+ * Global to sync core 0 and 2
+ */
+volatile unsigned int *sharedstate3 = (unsigned int *)XPAR_AXI_BRAM_CTRL_0_S_AXI_BASEADDR + 2;
 
 /**
  * Global to sync core 2 and 3
@@ -38,7 +41,7 @@ volatile unsigned int *sharedstate = (unsigned int *)XPAR_AXI_BRAM_CTRL_0_S_AXI_
  * Base address to share results
  */
 #if XPAR_CPU_ID == 1
-  char * base_addr = (char *) (0xa8000000);
+  char * base_addr1 = (char *) (0xa8000000);
 #else if XPAR_CPU_ID == 2
   char * base_addr = (char *) (0xa800003F);
   char * base_addr3 = (char *) (0xa800007E);
@@ -81,6 +84,7 @@ int main(int argc, char **argv)
   sizeoffile[i + 1] = file_aux[1];
   sizeoffile[i + 2] = file_aux[2];
   sizeoffile[i + 3] = file_aux[3];
+  file_aux++;
 
   size = atoi(sizeoffile);
 
@@ -152,6 +156,8 @@ int main(int argc, char **argv)
       section_aux++;
       section_aux_2++;
     }
+    *sharedstate3 = 0x1;
+    while(*sharedstate3 != 0x0);
   #endif
 
 	#ifdef debug

@@ -11,6 +11,34 @@
 #include "fsl.h"
 #endif
 
+/**
+ * Global to sync all cores
+ */
+volatile unsigned int *sharedstate = (unsigned int *)XPAR_AXI_BRAM_CTRL_0_S_AXI_BASEADDR;
+
+/**
+ * Global to sync core 0 and 1
+ */
+volatile unsigned int *sharedstate1 = (unsigned int *)XPAR_AXI_BRAM_CTRL_0_S_AXI_BASEADDR + 1;
+
+/**
+ * Global to sync core 0 and 2
+ */
+volatile unsigned int *sharedstate3 = (unsigned int *)XPAR_AXI_BRAM_CTRL_0_S_AXI_BASEADDR + 2;
+
+/**
+ * Base address to share results
+ */
+char * base_addr1 = (char *) (0xa8000000);
+char * base_addr2 = (char *) (0xa800003F);
+
+/* Must always be CPU0
+   Code below relies on that */
+#if XPAR_CPU_ID != 0
+#undef XPAR_CPU_ID
+#define XPAR_CPU_ID 0
+#endif
+
 int main(int argc, char **argv)
 {
 	int i, j;
@@ -21,17 +49,12 @@ int main(int argc, char **argv)
 	char * out;
 	#else
 	char *file = (char *) (0xa8100000);
+  char sizeoffile[10];
 	u32 timeL[12], timeH[12];
 	init_timer(1);
 	start_timer(1);
 	#endif
 
-/*	for (i = 0; i < 128; i++){
-		xil_printf("%02x ", file[i]);
-		if ((i%15)==0) xil_printf("\n");
-	}
-	exit(1);
-*/
 	#ifndef MB
 	if(argc != 2)
 	{
@@ -53,6 +76,35 @@ int main(int argc, char **argv)
 	compute_stats((char *) file);
 	#else
 	u32 * file_aux = (u32 *) file;
+
+  i = 0;
+
+  // Get size of file
+  while(((*file_aux & 0xFF000000)>>24 != LAST_DIGIT) &&
+      ((*file_aux & 0x00FF0000)>>16 != LAST_DIGIT) &&
+      ((*file_aux & 0x0000FF00)>>8 != LAST_DIGIT) &&
+      ((*file_aux & 0x000000FF) != LAST_DIGIT) )
+  {
+    sizeoffile[i] = file_aux[0];
+    sizeoffile[i + 1] = file_aux[1];
+    sizeoffile[i + 2] = file_aux[2];
+    sizeoffile[i + 3] = file_aux[3];
+    file_aux++;
+    i = i + 4;
+  }
+
+  // Let it compute size if \n is in the last 32 bits read
+  sizeoffile[i] = file_aux[0];
+  sizeoffile[i + 1] = file_aux[1];
+  sizeoffile[i + 2] = file_aux[2];
+  sizeoffile[i + 3] = file_aux[3];
+  file_aux++;
+
+  size = atoi(sizeoffile);
+
+  // Calculate the start pointer and end pointer
+  size = size/4 * XPAR_CPU_ID;
+  end = size + size/4;
 
 	cputfsl(FILE_END_CODE, 0);	// send FILE_END_CODE for the accelarator to recognise it
 
@@ -79,13 +131,33 @@ int main(int argc, char **argv)
 		//xil_printf("stats %d -> %d\n", i + 1, stats[i + 1]);
 	}
 
-	stats[FILE_END_CODE] = 1;
+  // Sync with core 1
+  // Receive from core 1
+  while(*sharedstate1 != 0x1);
+  *sharedstate1 = 0x0;
+
+  char * section_aux = base_addr1;
+
+  // Add core 1 results with local
+  for(i = 0; i < 256; i++){
+    stats[i] += *section_aux;
+    section_aux++;
+  }
 
   // Sync with core 2
   // Receive from core 2
+  while(*sharedstate3 != 0x1);
+  *sharedstate3 = 0x0;
 
-  // Sync with core 3
-  // Receive from core 3
+  section_aux = base_addr2;
+
+  // Add core 2 results with local
+  for(i = 0; i < 256; i++){
+    stats[i] += *section_aux;
+    section_aux++;
+  }
+
+  stats[FILE_END_CODE] = 1;
 
 	timeH[1] = get_timer64_val(&(timeL[1]));
 	#endif
