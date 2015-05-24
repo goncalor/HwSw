@@ -80,6 +80,13 @@ int main(int argc, char **argv)
 	}
 
 	stats[FILE_END_CODE] = 1;
+
+  // Sync with core 2
+  // Receive from core 2
+
+  // Sync with core 3
+  // Receive from core 3
+
 	timeH[1] = get_timer64_val(&(timeL[1]));
 	#endif
 
@@ -151,6 +158,8 @@ int main(int argc, char **argv)
 	char *encoding_table = (char *) stats;
 	tree_to_table(huffman_tree, encoding_table, 0, 1);
 
+  // Sync with all cores
+
 	#ifdef MB
 	timeH[7] = get_timer64_val(&(timeL[7]));
 	#endif
@@ -161,6 +170,11 @@ int main(int argc, char **argv)
 
 	// encode the buffer
 	unsigned outbuf_len = encode_file((char *)file, (char *)file, encoding_table);
+
+  // Write owns outbuf_len to stdout
+  // then read from core 2, 3 and 4 memory section
+
+  // Print everything in order to stdout
 
 	#ifdef MB
 	timeH[9] = get_timer64_val(&(timeL[9]));

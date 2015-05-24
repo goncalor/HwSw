@@ -44,9 +44,12 @@ int main(int argc, char **argv)
 		//xil_printf("stats %d -> %d\n", i + 1, stats[i + 1]);
 	}
 
-	stats[FILE_END_CODE] = 1;
-	timeH[1] = get_timer64_val(&(timeL[1]));
-	#endif
+  // Read memory section of core 4 and add with core 3's own
+  // Write to core 3 memory section
+
+  // Send to core 1:
+  // Write to memory section
+  // Sync with core 1
 
 	#ifdef debug
 	for(i=0; i<256; i++){
@@ -55,8 +58,17 @@ int main(int argc, char **argv)
 	}
 	#endif
 
+  // ponteiro para a memória externa com a tabela de
+  // codificação completa.
+  char *encoding_table = NULL;
+
+  // Sync with core 1 (wait until table is built)
+
 	// encode the buffer
 	unsigned outbuf_len = encode_file((char *)file, (char *)file, encoding_table);
+
+  // Write outbuf_len to specific memory section so that core 1 can read and
+  // print to screen
 
 	return 0;
 }
