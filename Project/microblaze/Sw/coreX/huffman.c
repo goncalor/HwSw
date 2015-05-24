@@ -45,7 +45,7 @@ volatile unsigned int *sharedstate = (unsigned int *)XPAR_AXI_BRAM_CTRL_0_S_AXI_
 
 int main(int argc, char **argv)
 {
-	int i, j;
+	int i, j, size, end;
 	char ascii[256];
   char sizeoffile[10];
 	char *file = (char *) (0xa8100000);
@@ -66,15 +66,25 @@ int main(int argc, char **argv)
     i = i + 4;
   }
 
+  size = atoi(sizeoffile);
+
+  // Calculate the start pointer and end pointer
+  size = size/4 * XPAR_CPU_ID;
+  end = size + size/4;
+
 	cputfsl(FILE_END_CODE, 0);	// send FILE_END_CODE for the accelarator to recognise it
 
-	while(((*file_aux & 0xFF000000)>>24 != FILE_END_CODE) &&
+  i = size;
+
+	while((((*file_aux & 0xFF000000)>>24 != FILE_END_CODE) &&
 			((*file_aux & 0x00FF0000)>>16 != FILE_END_CODE) &&
 			((*file_aux & 0x0000FF00)>>8 != FILE_END_CODE) &&
-			((*file_aux & 0x000000FF) != FILE_END_CODE) )
+			((*file_aux & 0x000000FF) != FILE_END_CODE)) ||
+      i < end )
 	{
 		putfsl(*file_aux, 0);
 		file_aux++;
+    i = i + 4;
 	}
 
 	putfsl(*file_aux, 0);	// put the last byte, which contains FILE_END_CODE
