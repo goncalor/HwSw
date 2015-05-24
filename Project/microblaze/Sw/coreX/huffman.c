@@ -47,11 +47,24 @@ int main(int argc, char **argv)
 {
 	int i, j;
 	char ascii[256];
+  char sizeoffile[10];
 	char *file = (char *) (0xa8100000);
 
-	file[MAX_FILE_SIZE-1] = FILE_END_CODE;	// place end of file code. to be safe
-
 	u32 * file_aux = (u32 *) file;
+  i = 0;
+
+  while(((*file_aux & 0xFF000000)>>24 != LAST_DIGIT) &&
+      ((*file_aux & 0x00FF0000)>>16 != LAST_DIGIT) &&
+      ((*file_aux & 0x0000FF00)>>8 != LAST_DIGIT) &&
+      ((*file_aux & 0x000000FF) != LAST_DIGIT) )
+  {
+    sizeoffile[i] = file_aux[0];
+    sizeoffile[i + 1] = file_aux[1];
+    sizeoffile[i + 2] = file_aux[2];
+    sizeoffile[i + 3] = file_aux[3];
+    file_aux++;
+    i = i + 4;
+  }
 
 	cputfsl(FILE_END_CODE, 0);	// send FILE_END_CODE for the accelarator to recognise it
 

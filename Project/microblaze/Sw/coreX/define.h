@@ -1,4 +1,5 @@
 #define FILE_END_CODE 0
+#define LAST_DIGIT 10
 //#define debug
 #define MB
 #define MAX_FILE_SIZE 20*1024*1024	// max 128 MB, external memory size
