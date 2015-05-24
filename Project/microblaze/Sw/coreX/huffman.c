@@ -66,6 +66,12 @@ int main(int argc, char **argv)
     i = i + 4;
   }
 
+  // Let it compute size if \n is in the last 32 bits read
+  sizeoffile[i] = file_aux[0];
+  sizeoffile[i + 1] = file_aux[1];
+  sizeoffile[i + 2] = file_aux[2];
+  sizeoffile[i + 3] = file_aux[3];
+
   size = atoi(sizeoffile);
 
   // Calculate the start pointer and end pointer
@@ -74,17 +80,15 @@ int main(int argc, char **argv)
 
 	cputfsl(FILE_END_CODE, 0);	// send FILE_END_CODE for the accelarator to recognise it
 
-  i = size;
-
 	while((((*file_aux & 0xFF000000)>>24 != FILE_END_CODE) &&
-			((*file_aux & 0x00FF0000)>>16 != FILE_END_CODE) &&
-			((*file_aux & 0x0000FF00)>>8 != FILE_END_CODE) &&
-			((*file_aux & 0x000000FF) != FILE_END_CODE)) ||
-      i < end )
+			   ((*file_aux & 0x00FF0000)>>16 != FILE_END_CODE) &&
+			   ((*file_aux & 0x0000FF00)>>8 != FILE_END_CODE) &&
+			   ((*file_aux & 0x000000FF) != FILE_END_CODE)) ||
+         size < end )
 	{
 		putfsl(*file_aux, 0);
 		file_aux++;
-    i = i + 4;
+    size = size + 4;
 	}
 
 	putfsl(*file_aux, 0);	// put the last byte, which contains FILE_END_CODE
