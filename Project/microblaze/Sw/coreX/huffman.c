@@ -145,10 +145,12 @@ int main(int argc, char **argv)
     while(*sharedstate2 != 0x1);
     *sharedstate2 = 0x0;
     // Add results from core 3 to core 2 and write to its memory section
-    char * section_aux = base_addr3;
+    section_aux = base_addr3;
+    char * section_aux_2 = base_addr;
     for(i = 0; i < 256; i++){
-      stats[i] += *section_aux;
+      *section_aux_2 = stats[i] + *section_aux;
       section_aux++;
+      section_aux_2++;
     }
   #endif
 
