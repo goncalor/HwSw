@@ -100,6 +100,7 @@ int main(int argc, char **argv)
   sizeoffile[i + 2] = file_aux[2];
   sizeoffile[i + 3] = file_aux[3];
   file_aux++;
+  sizeoffile[i + 4] = 0;
 
   size = atoi(sizeoffile);
 
