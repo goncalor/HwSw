@@ -1,12 +1,10 @@
 import os
 import sys
 
-def main():
+def error_checking():
   """
-  Main function
+  Error checking
   """
-
-  # Error checking
   if(len(sys.argv) != 2):
     print "Usage:"
     print "\tpython getfilesize.py name-of-file"
@@ -19,6 +17,14 @@ def main():
   elif(not sys.argv[1].endswith(".txt")):
     print "We only support .txt files."
     sys.exit(-2);
+
+
+def main():
+  """
+  Main function
+  """
+
+  error_checking()
 
   # Get file stats
   file_stats = os.stat(sys.argv[1])
