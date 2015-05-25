@@ -20,7 +20,21 @@ def main():
     print "We only support .txt files."
     sys.exit(-2);
 
+  # Get file stats
+  file_stats = os.stat(sys.argv[1])
+
+  print "Size of file is " + str(file_stats.st_size) + " bytes"
+
+  new_file = sys.argv[1].strip(".txt") + "_size" + ".txt"
+
+  print "New file is " + new_file
+
+  with open(new_file, "w+") as outfile:
+    outfile.write(str(file_stats.stats) + "\n")
+    with open(sys.argv[1], "r") as infile:
+      for line in infile:
+        outfile.write(line)
 
 
-
-main()
+if __name__ == '__main__':
+  main()
