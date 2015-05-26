@@ -44,12 +44,12 @@ volatile unsigned int *sharedstate2 = (unsigned int *)XPAR_AXI_BRAM_CTRL_0_S_AXI
  * Base address to share results
  */
 #if XPAR_CPU_ID == 0
-char * base_addr = (char *) (0xa8000000);
+char * base_addr = (char *) (XPAR_MCB_DDR2_S0_AXI_BASEADDR);
 #elif XPAR_CPU_ID == 2
-char * base_addr = (char *) (0xa800003F);
-char * base_addr3 = (char *) (0xa800007E);
+char * base_addr = (char *) (XPAR_MCB_DDR2_S0_AXI_BASEADDR + 0x400);
+char * base_addr3 = (char *) (XPAR_MCB_DDR2_S0_AXI_BASEADDR + 0x800);
 #elif XPAR_CPU_ID == 3
-char * base_addr = (char *) (0xa800007E);
+char * base_addr = (char *) (XPAR_MCB_DDR2_S0_AXI_BASEADDR + 0x800);
 #endif
 
 /* We are either CPU1, CPU2, CPU3 or CPU4.
@@ -62,7 +62,7 @@ char * base_addr = (char *) (0xa800007E);
 int main(int argc, char **argv) {
 	//char ascii[256];
 	char sizeoffile[10];
-	char *file = (char *) (0xa8100000);
+	char *file = (char *) (XPAR_MCB_DDR2_S0_AXI_BASEADDR + 0x100000);
 
 	u32 * file_aux = (u32 *) file;
 	int i = 0;
@@ -84,6 +84,8 @@ int main(int argc, char **argv) {
 	file_aux = file_aux + size;
 	u32 *end = file_aux + size + orig_size / 4;
 
+	  //---------- start FSL ---------
+
 	cputfsl(FILE_END_CODE, 0);
 	// send FILE_END_CODE for the accelarator to recognise it
 
@@ -95,7 +97,7 @@ int main(int argc, char **argv) {
 		file_aux++;
 	}
 
-	putfsl(*file_aux, 0);
+	putfsl(FILE_END_CODE, 0);
 	// put the last byte, which contains FILE_END_CODE
 
 	int tmp;
@@ -109,7 +111,7 @@ int main(int argc, char **argv) {
 		//xil_printf("stats %d -> %d\n", i + 1, stats[i + 1]);
 	}
 
-	stats[FILE_END_CODE] = 1;
+	  //---------- END FSL ---------
 
 	char * section_aux = base_addr;
 

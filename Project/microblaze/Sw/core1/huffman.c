@@ -31,8 +31,8 @@ volatile unsigned int *sharedstate3 = (unsigned int *)XPAR_AXI_BRAM_CTRL_0_S_AXI
 /**
  * Base address to share results
  */
-char * base_addr1 = (char *) (0xa8000000);
-char * base_addr2 = (char *) (0xa800003F);
+char * base_addr1 = (char *) (XPAR_MCB_DDR2_S0_AXI_BASEADDR);
+char * base_addr2 = (char *) (XPAR_MCB_DDR2_S0_AXI_BASEADDR + 0x400);
 
 /* Must always be CPU0
    Code below relies on that */
@@ -51,7 +51,7 @@ int main(int argc, char **argv)
 	char * file = malloc(MAX_FILE_SIZE*sizeof(char));
 	char * out;
 	#else
-	char *file = (char *) (0xa8100000);
+	char *file = (char *) (XPAR_MCB_DDR2_S0_AXI_BASEADDR + 0x100000);
   char sizeoffile[10];
 	u32 timeL[12], timeH[12];
 	init_timer(1);
@@ -94,11 +94,15 @@ int main(int argc, char **argv)
   int size;
   int orig_size = atoi(sizeoffile);
 
+  xil_printf("size %d", orig_size);
+
   // Calculate the start pointer and end pointer
   size = orig_size/4 * XPAR_CPU_ID;
 
   file_aux = file_aux + size;
   u32 *end = file_aux + size + orig_size/4;
+
+  //---------- start FSL ---------
 
 	cputfsl(FILE_END_CODE, 0);	// send FILE_END_CODE for the accelarator to recognise it
 
@@ -111,7 +115,7 @@ int main(int argc, char **argv)
 		file_aux++;
 	}
 
-	putfsl(*file_aux, 0);	// put the last byte, which contains FILE_END_CODE
+	putfsl(FILE_END_CODE, 0);	// put the last byte, which contains FILE_END_CODE
 
 	int tmp;
 	for(i=0; i<256; i = i + 2)
@@ -121,9 +125,11 @@ int main(int argc, char **argv)
 		stats[i] = (tmp & 0xFFFF0000) >> 16;
 		stats[i + 1] = tmp & 0x0000FFFF;
 
-		//xil_printf("stats %d -> %d\n", i, stats[i]);
-		//xil_printf("stats %d -> %d\n", i + 1, stats[i + 1]);
+		xil_printf("stats %d -> %d\n", i, stats[i]);
+		xil_printf("stats %d -> %d\n", i + 1, stats[i + 1]);
 	}
+
+	//------- END FSL -----------
 
   // Sync with core 1
   // Receive from core 1
