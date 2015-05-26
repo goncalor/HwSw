@@ -2,7 +2,6 @@
 #include <stdlib.h>
 
 #include "huffman_code.h"
-#include "misc.h"
 #include "define.h"
 
 // encodes orig into dest. returns the number of bytes written

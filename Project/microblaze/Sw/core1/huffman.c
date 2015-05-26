@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <xparameters.h>
+#include <xstatus.h>
 
 #include "huffman_code.h"
 #include "define.h"
@@ -34,10 +36,10 @@ char * base_addr2 = (char *) (0xa800003F);
 
 /* Must always be CPU0
    Code below relies on that */
-#if XPAR_CPU_ID != 0
+/*#if XPAR_CPU_ID != 0
 #undef XPAR_CPU_ID
 #define XPAR_CPU_ID 0
-#endif
+#endif*/
 
 int main(int argc, char **argv)
 {
@@ -76,44 +78,34 @@ int main(int argc, char **argv)
 	#ifndef MB
 	compute_stats((char *) file);
 	#else
-	u32 * file_aux = (u32 *) file;
+	u32 * file_aux;
 
   i = 0;
 
-  // Get size of file
-  while(((*file_aux & 0xFF000000)>>24 != LAST_DIGIT) &&
-      ((*file_aux & 0x00FF0000)>>16 != LAST_DIGIT) &&
-      ((*file_aux & 0x0000FF00)>>8 != LAST_DIGIT) &&
-      ((*file_aux & 0x000000FF) != LAST_DIGIT) )
+  while(*file != LAST_DIGIT)
   {
-    sizeoffile[i] = file_aux[0];
-    sizeoffile[i + 1] = file_aux[1];
-    sizeoffile[i + 2] = file_aux[2];
-    sizeoffile[i + 3] = file_aux[3];
-    file_aux++;
-    i = i + 4;
+	  sizeoffile[i++] = *file;
+	  file++;
   }
+  file++;
+  sizeoffile[i] = '\0';
+  file_aux = (u32 *) file;
 
-  // Let it compute size if \n is in the last 32 bits read
-  sizeoffile[i] = file_aux[0];
-  sizeoffile[i + 1] = file_aux[1];
-  sizeoffile[i + 2] = file_aux[2];
-  sizeoffile[i + 3] = file_aux[3];
-  file_aux++;
-  sizeoffile[i + 4] = 0;
-
-  size = atoi(sizeoffile);
+  int size;
+  int orig_size = atoi(sizeoffile);
 
   // Calculate the start pointer and end pointer
-  size = size/4 * XPAR_CPU_ID;
-  end = size + size/4;
+  size = orig_size/4 * XPAR_CPU_ID;
+
+  file_aux = file_aux + size;
+  u32 *end = file_aux + size + orig_size/4;
 
 	cputfsl(FILE_END_CODE, 0);	// send FILE_END_CODE for the accelarator to recognise it
 
-	while(((*file_aux & 0xFF000000)>>24 != FILE_END_CODE) &&
+	while((((*file_aux & 0xFF000000)>>24 != FILE_END_CODE) &&
 			((*file_aux & 0x00FF0000)>>16 != FILE_END_CODE) &&
 			((*file_aux & 0x0000FF00)>>8 != FILE_END_CODE) &&
-			((*file_aux & 0x000000FF) != FILE_END_CODE) )
+			((*file_aux & 0x000000FF) != FILE_END_CODE)) || (file_aux != end))
 	{
 		putfsl(*file_aux, 0);
 		file_aux++;
@@ -188,7 +180,7 @@ int main(int argc, char **argv)
 		}
 	}
 
-	int size = j;
+	size = j;
 
 	#ifdef debug
 	puts("");
