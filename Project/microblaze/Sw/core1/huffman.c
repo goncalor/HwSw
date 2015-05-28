@@ -113,6 +113,8 @@ int main(int argc, char **argv)
 
   xil_printf("Começar FSL\n");
 
+  //---------- start FSL ---------
+
 	cputfsl(FILE_END_CODE, 0);	// send FILE_END_CODE for the accelarator to recognise it
 
 	while((((*file_aux & 0xFF000000)>>24 != FILE_END_CODE) &&
