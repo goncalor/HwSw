@@ -16,23 +16,23 @@
 /**
  * Global to sync all cores
  */
-volatile unsigned int *sharedstate = (unsigned int *)XPAR_AXI_BRAM_CTRL_0_S_AXI_BASEADDR;
+volatile unsigned int *sharedstate = (unsigned int *)XPAR_AXI_BRAM_CTRL_1_S_AXI_BASEADDR;
 
 /**
  * Global to sync core 0 and 1
  */
-volatile unsigned int *sharedstate1 = (unsigned int *)XPAR_AXI_BRAM_CTRL_0_S_AXI_BASEADDR + 1;
+volatile unsigned int *sharedstate1 = (unsigned int *)XPAR_AXI_BRAM_CTRL_1_S_AXI_BASEADDR + 1;
 
 /**
  * Global to sync core 0 and 2
  */
-volatile unsigned int *sharedstate3 = (unsigned int *)XPAR_AXI_BRAM_CTRL_0_S_AXI_BASEADDR + 2;
+volatile unsigned int *sharedstate3 = (unsigned int *)XPAR_AXI_BRAM_CTRL_1_S_AXI_BASEADDR + 3;
 
 /**
  * Base address to share results
  */
-char * base_addr1 = (char *) (0xa8000000);
-char * base_addr2 = (char *) (0xa800003F);
+u32 * base_addr1 = (u32 *) (XPAR_MCB_DDR2_S0_AXI_BASEADDR);
+u32 * base_addr2 = (u32 *) (XPAR_MCB_DDR2_S0_AXI_BASEADDR + 0x400);
 
 /* Must always be CPU0
    Code below relies on that */
@@ -51,10 +51,13 @@ int main(int argc, char **argv)
 	char * file = malloc(MAX_FILE_SIZE*sizeof(char));
 	char * out;
 	#else
-	char *file = (char *) (0xa8100000);
+	char *file = (char *) (XPAR_MCB_DDR2_S0_AXI_BASEADDR + 0x100000);
   char sizeoffile[10];
 	u32 timeL[12], timeH[12];
-	init_timer(1);
+	if(init_timer(1) == XST_FAILURE){
+		xil_printf("timer :(\n");
+		//return 0;
+	}
 	start_timer(1);
 	#endif
 
@@ -94,43 +97,66 @@ int main(int argc, char **argv)
   int size;
   int orig_size = atoi(sizeoffile);
 
+  xil_printf("size %d\n", orig_size);
+
   // Calculate the start pointer and end pointer
   size = orig_size/4 * XPAR_CPU_ID;
 
+  xil_printf("Block size: %d\n", size);
+
   file_aux = file_aux + size;
   u32 *end = file_aux + size + orig_size/4;
+  xil_printf("start pointer: 0x%x\n", file_aux);
+  xil_printf("end pointer: 0x%x\n", end);
+
+  //---------- start FSL ---------
+
+  xil_printf("Começar FSL\n");
 
 	cputfsl(FILE_END_CODE, 0);	// send FILE_END_CODE for the accelarator to recognise it
 
 	while((((*file_aux & 0xFF000000)>>24 != FILE_END_CODE) &&
 			((*file_aux & 0x00FF0000)>>16 != FILE_END_CODE) &&
 			((*file_aux & 0x0000FF00)>>8 != FILE_END_CODE) &&
-			((*file_aux & 0x000000FF) != FILE_END_CODE)) || (file_aux != end))
+			((*file_aux & 0x000000FF) != FILE_END_CODE)))
 	{
 		putfsl(*file_aux, 0);
 		file_aux++;
+		if(file_aux >= end)
+			break;
+		xil_printf("Iteracoes a ser feitas\n");
 	}
 
-	putfsl(*file_aux, 0);	// put the last byte, which contains FILE_END_CODE
+	xil_printf("Enviar end code\n");
+	putfsl(FILE_END_CODE, 0);	// put the last byte, which contains FILE_END_CODE
+	xil_printf("Enviei o file end code\n");
+
 
 	int tmp;
-	for(i=0; i<256; i = i + 2)
+	for(i=0; i < 256; i = i + 2)
 	{
+		//xil_printf("Fazer get\n");
 		getfsl(tmp, 0);
 
 		stats[i] = (tmp & 0xFFFF0000) >> 16;
 		stats[i + 1] = tmp & 0x0000FFFF;
 
-		//xil_printf("stats %d -> %d\n", i, stats[i]);
-		//xil_printf("stats %d -> %d\n", i + 1, stats[i + 1]);
+		xil_printf("stats %d -> %d\n", i, stats[i]);
+		xil_printf("stats %d -> %d\n", i + 1, stats[i + 1]);
 	}
+
+	//------- END FSL -----------
+
+	xil_printf("Vou tentar sincroniar com o core 1\n");
 
   // Sync with core 1
   // Receive from core 1
   while(*sharedstate1 != 0x1);
   *sharedstate1 = 0x0;
 
-  char * section_aux = base_addr1;
+  xil_printf("Sincronizei com o core 1\n");
+
+  u32 * section_aux = (u32*) base_addr1;
 
   // Add core 1 results with local
   for(i = 0; i < 256; i++){
@@ -138,10 +164,14 @@ int main(int argc, char **argv)
     section_aux++;
   }
 
+  xil_printf("Vou tentar sincroniar com o core 2\n");
+
   // Sync with core 2
   // Receive from core 2
   while(*sharedstate3 != 0x1);
   *sharedstate3 = 0x0;
+
+  xil_printf("Sincronizei com o core 2\n");
 
   section_aux = base_addr2;
 
@@ -152,6 +182,9 @@ int main(int argc, char **argv)
   }
 
   stats[FILE_END_CODE] = 1;
+
+  for(i=0; i<256; i++)
+  		xil_printf("%d: \t %d\n", i, stats[i]);
 
 	timeH[1] = get_timer64_val(&(timeL[1]));
 	#endif
@@ -210,7 +243,7 @@ int main(int argc, char **argv)
 	timeH[4] = get_timer64_val(&(timeL[4]));
 	#endif
 
-	//HuffmanPrint(huffman_tree, (char *)file);
+	HuffmanPrint(huffman_tree, (char *)file);
 
 	#ifdef MB
 	timeH[5] = get_timer64_val(&(timeL[5]));
