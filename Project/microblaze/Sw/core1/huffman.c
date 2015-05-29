@@ -31,8 +31,8 @@ volatile unsigned int *sharedstate3 = (unsigned int *)XPAR_AXI_BRAM_CTRL_1_S_AXI
 /**
  * Base address to share results
  */
-u32 * base_addr1 = (u32 *) (XPAR_MCB_DDR2_S0_AXI_BASEADDR);
-u32 * base_addr2 = (u32 *) (XPAR_MCB_DDR2_S0_AXI_BASEADDR + 0x400);
+u32 * base_addr1 = (u32 *) (XPAR_AXI_BRAM_CTRL_1_S_AXI_BASEADDR + 4);
+u32 * base_addr2 = (u32 *) (XPAR_AXI_BRAM_CTRL_1_S_AXI_BASEADDR + 0x400 + 4);
 
 /* Must always be CPU0
    Code below relies on that */
@@ -55,7 +55,7 @@ int main(int argc, char **argv)
   char sizeoffile[10];
 	u32 timeL[12], timeH[12];
 	if(init_timer(1) == XST_FAILURE){
-		xil_printf("timer :(\n");
+		//xil_printf("timer :(\n");
 		//return 0;
 	}
 	start_timer(1);
@@ -91,72 +91,84 @@ int main(int argc, char **argv)
 	  file++;
   }
   file++;
+  //xil_printf("after LAST_DIGIT %d\n", *file);
   sizeoffile[i] = '\0';
   file_aux = (u32 *) file;
+  char *file_aux_char = file;
 
   int size;
   int orig_size = atoi(sizeoffile);
 
-  xil_printf("size %d\n", orig_size);
+  //xil_printf("size %d\n", orig_size);
 
   // Calculate the start pointer and end pointer
   size = orig_size/4 * XPAR_CPU_ID;
 
-  xil_printf("Block size: %d\n", size);
+  //xil_printf("Block size: %d\n", size);
 
-  file_aux = file_aux + size;
-  u32 *end = file_aux + size + orig_size/4;
-  xil_printf("start pointer: 0x%x\n", file_aux);
-  xil_printf("end pointer: 0x%x\n", end);
-
-  //---------- start FSL ---------
-
-  xil_printf("Começar FSL\n");
+  file_aux = (u32*)(file_aux_char + size);
+//xil_printf("first read char %d\n", *file_aux_char);
+  u32 *end = (u32*)(file_aux_char + size + orig_size/4);
+//xil_printf("char after last to read %d\n", *((char*)end));
+  //xil_printf("start pointer: 0x%x\n", file_aux);
+  //xil_printf("end pointer: 0x%x\n", end);
 
   //---------- start FSL ---------
+
+  //xil_printf("Começar FSL\n");
 
 	cputfsl(FILE_END_CODE, 0);	// send FILE_END_CODE for the accelarator to recognise it
-
+char *aux_debug;
 	while((((*file_aux & 0xFF000000)>>24 != FILE_END_CODE) &&
 			((*file_aux & 0x00FF0000)>>16 != FILE_END_CODE) &&
 			((*file_aux & 0x0000FF00)>>8 != FILE_END_CODE) &&
 			((*file_aux & 0x000000FF) != FILE_END_CODE)))
 	{
+		aux_debug = (char*) file_aux;
+		//xil_printf("%d, %d, %d, %d\n", *aux_debug, *(aux_debug+1), *(aux_debug+2), *(aux_debug+3));
 		putfsl(*file_aux, 0);
 		file_aux++;
 		if(file_aux >= end)
 			break;
-		xil_printf("Iteracoes a ser feitas\n");
+		//xil_printf("Iteracoes a ser feitas\n");
 	}
 
-	xil_printf("Enviar end code\n");
+	//xil_printf("Enviar end code\n");
 	putfsl(FILE_END_CODE, 0);	// put the last byte, which contains FILE_END_CODE
-	xil_printf("Enviei o file end code\n");
+	//xil_printf("Enviei o file end code\n");
 
 
 	int tmp;
 	for(i=0; i < 256; i = i + 2)
 	{
-		//xil_printf("Fazer get\n");
+		////xil_printf("Fazer get\n");
 		getfsl(tmp, 0);
 
 		stats[i] = (tmp & 0xFFFF0000) >> 16;
 		stats[i + 1] = tmp & 0x0000FFFF;
 
-		xil_printf("stats %d -> %d\n", i, stats[i]);
-		xil_printf("stats %d -> %d\n", i + 1, stats[i + 1]);
+		//xil_printf("stats %d -> %d\n", i, stats[i]);
+		//xil_printf("stats %d -> %d\n", i + 1, stats[i + 1]);
 	}
+
+	//DEBUG
+		for(i=0; i<256; i++)
+			stats[i] = i;
 
 	//------- END FSL -----------
 
-	xil_printf("Vou tentar sincroniar com o core 1\n");
+
+	//------- start SYNC and SUM
+
+	//xil_printf("Vou tentar sincroniar com o core 1\n");
 
   // Sync with core 1
   // Receive from core 1
-  while(*sharedstate1 != 0x1);
+  while(*sharedstate1 != 0x1)
+	  ;
   *sharedstate1 = 0x0;
 
-  xil_printf("Sincronizei com o core 1\n");
+  //xil_printf("Sincronizei com o core 1\n");
 
   u32 * section_aux = (u32*) base_addr1;
 
@@ -166,14 +178,15 @@ int main(int argc, char **argv)
     section_aux++;
   }
 
-  xil_printf("Vou tentar sincroniar com o core 2\n");
+  //xil_printf("Vou tentar sincroniar com o core 2\n");
 
   // Sync with core 2
   // Receive from core 2
-  while(*sharedstate3 != 0x1);
+  while(*sharedstate3 != 0x1)
+	  ;
   *sharedstate3 = 0x0;
 
-  xil_printf("Sincronizei com o core 2\n");
+  //xil_printf("Sincronizei com o core 2\n");
 
   section_aux = base_addr2;
 
@@ -184,9 +197,10 @@ int main(int argc, char **argv)
   }
 
   stats[FILE_END_CODE] = 1;
+	//------- END SYNC and SUM
 
   for(i=0; i<256; i++)
-  		xil_printf("%d: \t %d\n", i, stats[i]);
+  		//xil_printf("%d: \t %d\n", i, stats[i]);
 
 	timeH[1] = get_timer64_val(&(timeL[1]));
 	#endif
@@ -198,8 +212,8 @@ int main(int argc, char **argv)
 	#else
 	for(i=0; i<256; i++)
 	{
-		xil_printf("%d -> \n", i);
-		xil_printf("%d\n", stats[i]);
+		//xil_printf("%d -> \n", i);
+		//xil_printf("%d\n", stats[i]);
 	}
 	#endif
 	#endif
@@ -225,8 +239,8 @@ int main(int argc, char **argv)
 	#else
 	for(i=0; i<256; i++)
 	{
-		xil_printf("%d -> ", ascii[i]);
-		xil_printf("%d\n", stats[i]);
+		//xil_printf("%d -> ", ascii[i]);
+		//xil_printf("%d\n", stats[i]);
 	}
 	#endif
 	#endif
@@ -245,7 +259,7 @@ int main(int argc, char **argv)
 	timeH[4] = get_timer64_val(&(timeL[4]));
 	#endif
 
-	HuffmanPrint(huffman_tree, (char *)file);
+	//HuffmanPrint(huffman_tree, (char *)file);
 
 	#ifdef MB
 	timeH[5] = get_timer64_val(&(timeL[5]));
@@ -292,32 +306,32 @@ int main(int argc, char **argv)
 	timeH[10] = get_timer64_val(&(timeL[10]));
 	timeH[11] = get_timer64_val(&timeL[11]);
 
-	xil_printf("start compute_stats(): %d ms\n", (int) conv2_cycles_to_msecs(timeH[0], timeL[0]));
-	xil_printf("finish compute_stats(): %d ms\n", (int) conv2_cycles_to_msecs(timeH[1], timeL[1]));
-	xil_printf("start buildHuffmanTree(): %d ms\n", (int) conv2_cycles_to_msecs(timeH[2], timeL[2]));
-	xil_printf("finish buildHuffmanTree(): %d ms\n", (int) conv2_cycles_to_msecs(timeH[3], timeL[3]));
-	xil_printf("start HuffmanPrint(): %d ms\n", (int) conv2_cycles_to_msecs(timeH[4], timeL[4]));
-	xil_printf("finish HuffmanPrint(): %d ms\n", (int) conv2_cycles_to_msecs(timeH[5], timeL[5]));
-	xil_printf("start tree_to_table(): %d ms\n", (int) conv2_cycles_to_msecs(timeH[6], timeL[6]));
-	xil_printf("finish tree_to_table(): %d ms\n", (int) conv2_cycles_to_msecs(timeH[7], timeL[7]));
-	xil_printf("start encode_file(): %d ms\n", (int) conv2_cycles_to_msecs(timeH[8], timeL[8]));
-	xil_printf("finish encode_file(): %d ms\n", (int) conv2_cycles_to_msecs(timeH[9], timeL[9]));
-	xil_printf("time elapsed: %d ms\n", (int) conv2_cycles_to_msecs(timeH[10], timeL[10]));
-	xil_printf("time elapsed: %d ms\n", (int) conv2_cycles_to_msecs(timeH[11], timeL[11]));
+	//xil_printf("start compute_stats(): %d ms\n", (int) conv2_cycles_to_msecs(timeH[0], timeL[0]));
+	//xil_printf("finish compute_stats(): %d ms\n", (int) conv2_cycles_to_msecs(timeH[1], timeL[1]));
+	//xil_printf("start buildHuffmanTree(): %d ms\n", (int) conv2_cycles_to_msecs(timeH[2], timeL[2]));
+	//xil_printf("finish buildHuffmanTree(): %d ms\n", (int) conv2_cycles_to_msecs(timeH[3], timeL[3]));
+	//xil_printf("start HuffmanPrint(): %d ms\n", (int) conv2_cycles_to_msecs(timeH[4], timeL[4]));
+	//xil_printf("finish HuffmanPrint(): %d ms\n", (int) conv2_cycles_to_msecs(timeH[5], timeL[5]));
+	//xil_printf("start tree_to_table(): %d ms\n", (int) conv2_cycles_to_msecs(timeH[6], timeL[6]));
+	//xil_printf("finish tree_to_table(): %d ms\n", (int) conv2_cycles_to_msecs(timeH[7], timeL[7]));
+	//xil_printf("start encode_file(): %d ms\n", (int) conv2_cycles_to_msecs(timeH[8], timeL[8]));
+	//xil_printf("finish encode_file(): %d ms\n", (int) conv2_cycles_to_msecs(timeH[9], timeL[9]));
+	//xil_printf("time elapsed: %d ms\n", (int) conv2_cycles_to_msecs(timeH[10], timeL[10]));
+	//xil_printf("time elapsed: %d ms\n", (int) conv2_cycles_to_msecs(timeH[11], timeL[11]));
 	#endif
 
 	// Print statistics of compression
-	puts("----------------STATS---------------");
+	//xil_printf("----------------STATS---------------");
 	putchar('\n');
-	puts("Compressed file");
+	//xil_printf("Compressed file");
 
 	#ifndef MB
 	printf("\tSize of compressed file (bits): %d\n", bits);
 	printf("\tSize of compressed file (bytes): %u (without header)\n", outbuf_len);
   printf("SIZEOF: %lu\n", sizeof(heap_nodes));
 	#else
-	xil_printf("\tSize of compressed file (bits): %d\n", bits);
-	xil_printf("\tSize of compressed file (bytes): %d (without header)\n", outbuf_len);
+	//xil_printf("\tSize of compressed file (bits): %d\n", bits);
+	//xil_printf("\tSize of compressed file (bytes): %d (without header)\n", outbuf_len);
 	#endif
 	return 0;
 }
