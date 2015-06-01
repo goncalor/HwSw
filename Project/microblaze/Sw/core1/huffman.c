@@ -81,10 +81,8 @@ int main(int argc, char **argv)
 	#ifndef MB
 	compute_stats((char *) file);
 	#else
-	u32 * file_aux;
 
   i = 0;
-
   while(*file != LAST_DIGIT)
   {
 	  sizeoffile[i++] = *file;
@@ -93,8 +91,6 @@ int main(int argc, char **argv)
   file++;
   //xil_printf("after LAST_DIGIT %d\n", *file);
   sizeoffile[i] = '\0';
-  file_aux = (u32 *) file;
-  char *file_aux_char = file;
 
   int size;
   int orig_size = atoi(sizeoffile);
@@ -106,9 +102,9 @@ int main(int argc, char **argv)
 
   //xil_printf("Block size: %d\n", size);
 
-  file_aux = (u32*)(file_aux_char + size);
+  char *file_aux = file + size;
 //xil_printf("first read char %d\n", *file_aux_char);
-  u32 *end = (u32*)(file_aux_char + size + orig_size/4);
+  char *end = file_aux + orig_size/4;
 //xil_printf("char after last to read %d\n", *((char*)end));
   //xil_printf("start pointer: 0x%x\n", file_aux);
   //xil_printf("end pointer: 0x%x\n", end);
@@ -117,26 +113,29 @@ int main(int argc, char **argv)
 
   //xil_printf("Começar FSL\n");
 
+  char *aux_debug;
+
 	cputfsl(FILE_END_CODE, 0);	// send FILE_END_CODE for the accelarator to recognise it
-char *aux_debug;
-	while((((*file_aux & 0xFF000000)>>24 != FILE_END_CODE) &&
-			((*file_aux & 0x00FF0000)>>16 != FILE_END_CODE) &&
-			((*file_aux & 0x0000FF00)>>8 != FILE_END_CODE) &&
-			((*file_aux & 0x000000FF) != FILE_END_CODE)))
+
+	char to_send[4];
+
+	for(file_aux=file, i=0; file_aux < end; file_aux++, i++)
 	{
-		aux_debug = (char*) file_aux;
-		//xil_printf("%d, %d, %d, %d\n", *aux_debug, *(aux_debug+1), *(aux_debug+2), *(aux_debug+3));
-		putfsl(*file_aux, 0);
-		file_aux++;
-		if(file_aux >= end)
-			break;
-		//xil_printf("Iteracoes a ser feitas\n");
+		to_send[i] = *file_aux;
+
+		if(i==3)
+		{
+			putfsl(*((u32*)to_send), 0);
+			i=-1;
+		}
 	}
 
-	//xil_printf("Enviar end code\n");
-	putfsl(FILE_END_CODE, 0);	// put the last byte, which contains FILE_END_CODE
+	// send remaining bytes
+	to_send[i] = FILE_END_CODE;
+	putfsl((u32*)to_send, 0);
 	//xil_printf("Enviei o file end code\n");
 
+	//------ receive results ------
 
 	int tmp;
 	for(i=0; i < 256; i = i + 2)
@@ -304,7 +303,7 @@ char *aux_debug;
 	write_file(out, file, outbuf_len);
 	#else
 	timeH[10] = get_timer64_val(&(timeL[10]));
-	timeH[11] = get_timer64_val(&timeL[11]);
+	timeH[11] = get_timer64_val(&(timeL[11]));
 
 	//xil_printf("start compute_stats(): %d ms\n", (int) conv2_cycles_to_msecs(timeH[0], timeL[0]));
 	//xil_printf("finish compute_stats(): %d ms\n", (int) conv2_cycles_to_msecs(timeH[1], timeL[1]));
@@ -322,7 +321,7 @@ char *aux_debug;
 
 	// Print statistics of compression
 	//xil_printf("----------------STATS---------------");
-	putchar('\n');
+	//putchar('\n');
 	//xil_printf("Compressed file");
 
 	#ifndef MB

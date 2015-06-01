@@ -56,17 +56,13 @@ int main(int argc, char **argv) {
 	char sizeoffile[10];
 	char *file = (char *) (XPAR_MCB_DDR2_S0_AXI_BASEADDR + 0x100000);
 
-	u32 * file_aux = (u32 *) file;
 	int i = 0;
-
 	while (*file != LAST_DIGIT) {
 		sizeoffile[i++] = *file;
 		file++;
 	}
 	file++;
 	sizeoffile[i] = '\0';
-	file_aux = (u32 *) file;
-	char *file_aux_char = file;
 
 	int size;
 	int orig_size = atoi(sizeoffile);
@@ -74,11 +70,11 @@ int main(int argc, char **argv) {
 	// Calculate the start pointer and end pointer
 	size = orig_size / 4 * XPAR_CPU_ID;
 
-	file_aux = (u32*)(file_aux_char + size);
+	char *file_aux = file + size;
 	#if XPAR_CPU_ID == 3
-	u32 *end = (u32*)(file_aux_char + size + orig_size / 4 + (orig_size % 4));
+	char *end = file_aux + orig_size/4 + orig_size%4;
 	#else
-	u32 *end = (u32*)(file_aux_char + size + orig_size / 4);
+	char *end = file_aux + orig_size/4;
 	#endif
 
 	  //---------- start FSL ---------
@@ -86,19 +82,25 @@ int main(int argc, char **argv) {
 	cputfsl(FILE_END_CODE, 0);
 	// send FILE_END_CODE for the accelarator to recognise it
 
-	while ((((*file_aux & 0xFF000000) >> 24 != FILE_END_CODE) &&
-			((*file_aux	& 0x00FF0000) >> 16 != FILE_END_CODE) &&
-			((*file_aux & 0x0000FF00) >> 8 != FILE_END_CODE) &&
-			((*file_aux & 0x000000FF) != FILE_END_CODE)))
+	char to_send[4];
+
+	for(file_aux=file, i=0; file_aux < end; file_aux++, i++)
 	{
-		putfsl(*file_aux, 0);
-		file_aux++;
-		if(file_aux >= end)
-			break;
+		to_send[i] = *file_aux;
+
+		if(i==3)
+		{
+			putfsl(*((u32*)to_send), 0);
+			i=-1;
+		}
 	}
 
-	putfsl(FILE_END_CODE, 0);
-	// put the last byte, which contains FILE_END_CODE
+	// send remaining bytes
+	to_send[i] = FILE_END_CODE;
+	putfsl((u32*)to_send, 0);
+	//xil_printf("Enviei o file end code\n");
+
+	//------ receive results ------
 
 	int tmp;
 	for (i = 0; i < 256; i = i + 2)
