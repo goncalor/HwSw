@@ -13,6 +13,8 @@
 #include "fsl.h"
 #endif
 
+#define DEBUG_CORE_ID 1
+
 /**
  * Global to sync all cores
  */
@@ -91,7 +93,6 @@ int main(int argc, char **argv)
 	#ifndef MB
 	compute_stats((char *) file);
 	#else
-	u32 * file_aux;
 
   i = 0;
 
@@ -103,8 +104,6 @@ int main(int argc, char **argv)
   file++;
   //xil_printf("after LAST_DIGIT %d\n", *file);
   sizeoffile[i] = '\0';
-  file_aux = (u32 *) file;
-  char *file_aux_char = file;
 
   int size;
   int orig_size = atoi(sizeoffile);
@@ -116,37 +115,40 @@ int main(int argc, char **argv)
 
   //xil_printf("Block size: %d\n", size);
 
-  file_aux = (u32*)(file_aux_char + size);
+  char *file_aux = file + size;
 //xil_printf("first read char %d\n", *file_aux_char);
-  u32 *end = (u32*)(file_aux_char + size + orig_size/4);
+  char *end = file_aux + orig_size/4;
 //xil_printf("char after last to read %d\n", *((char*)end));
   //xil_printf("start pointer: 0x%x\n", file_aux);
   //xil_printf("end pointer: 0x%x\n", end);
 
   //---------- start FSL ---------
 
-  //xil_printf("Começar FSL\n");
+  //xil_printf("ComeÃ§ar FSL\n");
+
+  //char *aux_debug;
 
 	cputfsl(FILE_END_CODE, 0);	// send FILE_END_CODE for the accelarator to recognise it
-char *aux_debug;
-	while((((*file_aux & 0xFF000000)>>24 != FILE_END_CODE) &&
-			((*file_aux & 0x00FF0000)>>16 != FILE_END_CODE) &&
-			((*file_aux & 0x0000FF00)>>8 != FILE_END_CODE) &&
-			((*file_aux & 0x000000FF) != FILE_END_CODE)))
+
+	char to_send[4];
+
+	for(i=0; file_aux < end; file_aux++, i++)
 	{
-		aux_debug = (char*) file_aux;
-		//xil_printf("%d, %d, %d, %d\n", *aux_debug, *(aux_debug+1), *(aux_debug+2), *(aux_debug+3));
-		putfsl(*file_aux, 0);
-		file_aux++;
-		if(file_aux >= end)
-			break;
-		//xil_printf("Iteracoes a ser feitas\n");
+		to_send[i] = *file_aux;
+
+		if(i==3)
+		{
+			putfsl(*((u32*)to_send), 0);
+			i=-1;
+		}
 	}
 
-	//xil_printf("Enviar end code\n");
-	putfsl(FILE_END_CODE, 0);	// put the last byte, which contains FILE_END_CODE
+	// send remaining bytes
+	to_send[i] = FILE_END_CODE;
+	putfsl(*((u32*)to_send), 0);
 	//xil_printf("Enviei o file end code\n");
 
+	//------ receive results ------
 
 	int tmp;
 	for(i=0; i < 256; i = i + 2)
@@ -162,8 +164,8 @@ char *aux_debug;
 	}
 
 	//DEBUG
-		for(i=0; i<256; i++)
-			stats[i] = i;
+/*		for(i=0; i<256; i++)
+			stats[i] = i;*/
 
 	//------- END FSL -----------
 
@@ -207,6 +209,15 @@ char *aux_debug;
   }
 
   stats[FILE_END_CODE] = 1;
+
+#if XPAR_CPU_ID == DEBUG_CORE_ID
+	xil_printf("counts on core %d after synching all\n", XPAR_CPU_ID);
+	for(i=0; i<256; i++) {
+		xil_printf("%d -> ", i);
+		xil_printf("%d\n", stats[i]);
+	}
+#endif
+
 	//------- END SYNC and SUM
 
   for(i=0; i<256; i++)

@@ -9,7 +9,7 @@
 
 #include "fsl.h"
 
-#define DEBUG_CORE_ID 2
+#define DEBUG_CORE_ID 10
 
 /**
  * Global to sync all cores
@@ -72,21 +72,25 @@ int main(int argc, char **argv) {
 
 	//while(*sync0 != 0x1 || *sync1 != 0x1 || *sync2 != 0x1 || *sync3 != 0x1);
 */
-	u32 * file_aux = (u32 *) file;
-	int i = 0;
 
 #if XPAR_CPU_ID == DEBUG_CORE_ID
 	xil_printf("core %d antes do last digit\n", XPAR_CPU_ID);
 #endif
 
+#if XPAR_CPU_ID == DEBUG_CORE_ID
+	char *debug_ptr;
+	for(debug_ptr=file; *debug_ptr!=FILE_END_CODE; debug_ptr++)
+		xil_printf("0x%x ", *debug_ptr);
+	xil_printf("\n");
+#endif
+
+	int i = 0;
 	while (*file != LAST_DIGIT) {
 		sizeoffile[i++] = *file;
 		file++;
 	}
 	file++;
 	sizeoffile[i] = '\0';
-	file_aux = (u32 *) file;
-	char *file_aux_char = file;
 
 	int size;
 	int orig_size = atoi(sizeoffile);
@@ -98,37 +102,50 @@ int main(int argc, char **argv) {
 	// Calculate the start pointer and end pointer
 	size = orig_size / 4 * XPAR_CPU_ID;
 
-	file_aux = (u32*)(file_aux_char + size);
+	char *file_aux = file + size;
 	#if XPAR_CPU_ID == 3
-	u32 *end = (u32*)(file_aux_char + size + orig_size / 4 + (orig_size % 4));
+	char *end = file_aux + orig_size/4 + orig_size%4;
 	#else
-	u32 *end = (u32*)(file_aux_char + size + orig_size / 4);
+	char *end = file_aux + orig_size/4;
 	#endif
 
 	  //---------- start FSL ---------
 
 #if XPAR_CPU_ID == DEBUG_CORE_ID
-	xil_printf("core %d come�a FSL\n", XPAR_CPU_ID);
+	xil_printf("core %d começa FSL\n", XPAR_CPU_ID);
 #endif
 
-	cputfsl(FILE_END_CODE, 0);
 	// send FILE_END_CODE for the accelarator to recognise it
+	cputfsl(FILE_END_CODE, 0);
+	char to_send[4];
 
-	while ((((*file_aux & 0xFF000000) >> 24 != FILE_END_CODE) &&
-			((*file_aux	& 0x00FF0000) >> 16 != FILE_END_CODE) &&
-			((*file_aux & 0x0000FF00) >> 8 != FILE_END_CODE) &&
-			((*file_aux & 0x000000FF) != FILE_END_CODE)))
+	for(i=0; file_aux < end; file_aux++, i++)
 	{
-		putfsl(*file_aux, 0);
-		file_aux++;
-		if(file_aux >= end)
-			break;
-	}
-	// put the last byte, which contains FILE_END_CODE
-	putfsl(FILE_END_CODE, 0);
+		to_send[i] = *file_aux;
 
 #if XPAR_CPU_ID == DEBUG_CORE_ID
-	xil_printf("core %d come�a a receber resultados\n", XPAR_CPU_ID);
+	xil_printf("to_send[i] %x\n", to_send[i]);
+#endif
+
+		if(i==3)
+		{
+			putfsl(*((u32*)to_send), 0);
+			i=-1;
+
+#if XPAR_CPU_ID == DEBUG_CORE_ID
+	xil_printf("to_send %x\n", *((u32*)to_send));
+#endif
+		}
+	}
+
+	// send remaining bytes
+	to_send[i] = FILE_END_CODE;
+	putfsl(*((u32*)to_send), 0);
+
+	//------ receive results ------
+
+#if XPAR_CPU_ID == DEBUG_CORE_ID
+	xil_printf("core %d começa a receber resultados\n", XPAR_CPU_ID);
 #endif
 
 	int tmp;
@@ -142,10 +159,6 @@ int main(int argc, char **argv) {
 		//xil_printf("stats %d -> %d\n", i, stats[i]);
 		//xil_printf("stats %d -> %d\n", i + 1, stats[i + 1]);
 	}
-
-//DEBUG
-	for(i=0; i<256; i++)
-		stats[i] = i;
 
 	  //---------- END FSL ---------
 
@@ -179,15 +192,21 @@ int main(int argc, char **argv) {
 	i=0;
 	while(*sharedstate2 != 0x1)
 	{
-		int k;
+	/*	int k;
 		for(k=0; k<30000;k++)
 			;
-		i%16 ? xil_printf("%d ", i++) : xil_printf("%d\n", i++);
+		i%16 ? xil_printf("%d ", i++) : xil_printf("%d\n", i++);*/
 	}
 	*sharedstate2 = 0x0;
 
 #if XPAR_CPU_ID == DEBUG_CORE_ID
 	xil_printf("core %d synched with core 3\n", XPAR_CPU_ID);
+#endif
+
+#if XPAR_CPU_ID == DEBUG_CORE_ID
+	for(debug_ptr=file; *debug_ptr!=FILE_END_CODE; debug_ptr++)
+		xil_printf("0x%x ", *debug_ptr);
+	xil_printf("\n");
 #endif
 
 	// Add results from core 3 to core 2 and write to its memory section
@@ -204,6 +223,20 @@ int main(int argc, char **argv) {
 	for(i=0; i<256; i++) {
 		xil_printf("%d -> ", i);
 		xil_printf("%d\n", base_addr3[i]);
+	}
+#endif
+
+#if XPAR_CPU_ID == DEBUG_CORE_ID
+	xil_printf("counts that core %d read from 3's shared memory\n", XPAR_CPU_ID);
+	for(i=0; i<256; i++) {
+		xil_printf("%d -> ", i);
+		xil_printf("%d\n", base_addr3[i]);
+	}
+
+	xil_printf("results on core %d after summing with core 3 results\n", XPAR_CPU_ID);
+	for(i=0; i<256; i++) {
+		xil_printf("%d -> ", i);
+		xil_printf("%d\n", base_addr[i]);
 	}
 #endif
 
@@ -254,8 +287,8 @@ int main(int argc, char **argv) {
 		;
 	*sharedstate = 0x1;*/
 
-	// ponteiro para a memória externa com a tabela de
-	// codificação completa.
+	// ponteiro para a memÃ³ria externa com a tabela de
+	// codificaÃ§Ã£o completa.
 	char *encoding_table = NULL;	//TODO
 
 	// encode the buffer
