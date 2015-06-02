@@ -13,20 +13,22 @@
 #include "fsl.h"
 #endif
 
+#define DEBUG_CORE_ID 1
+
 /**
  * Global to sync all cores
  */
-volatile unsigned int *sharedstate = (unsigned int *)XPAR_AXI_BRAM_CTRL_1_S_AXI_BASEADDR;
+volatile char *sharedstate = (char *)XPAR_AXI_BRAM_CTRL_1_S_AXI_BASEADDR;
 
 /**
  * Global to sync core 0 and 1
  */
-volatile unsigned int *sharedstate1 = (unsigned int *)XPAR_AXI_BRAM_CTRL_1_S_AXI_BASEADDR + 1;
+volatile char *sharedstate1 = (char *)XPAR_AXI_BRAM_CTRL_1_S_AXI_BASEADDR + 1;
 
 /**
  * Global to sync core 0 and 2
  */
-volatile unsigned int *sharedstate3 = (unsigned int *)XPAR_AXI_BRAM_CTRL_1_S_AXI_BASEADDR + 3;
+volatile char *sharedstate3 = (char *)XPAR_AXI_BRAM_CTRL_1_S_AXI_BASEADDR + 3;
 
 /**
  * Base address to share results
@@ -45,7 +47,17 @@ int main(int argc, char **argv)
 {
 	int i, j;
 	char ascii[256];
-  *sharedstate = 0x1;
+
+  u32 * sync0 = (u32 *) XPAR_AXI_BRAM_CTRL_1_S_AXI_BASEADDR + 4;
+  u32 * sync1 = (u32 *) XPAR_AXI_BRAM_CTRL_1_S_AXI_BASEADDR + 5;
+  u32 * sync2 = (u32 *) XPAR_AXI_BRAM_CTRL_1_S_AXI_BASEADDR + 6;
+  u32 * sync3 = (u32 *) XPAR_AXI_BRAM_CTRL_1_S_AXI_BASEADDR + 7;
+
+  /*
+  *sync0 = 0x1;
+
+  while(*sync0 != 0x1 || *sync1 != 0x1 || *sync2 != 0x1 || *sync3 != 0x1);
+*/
 
 	#ifndef MB
 	char * file = malloc(MAX_FILE_SIZE*sizeof(char));
@@ -55,7 +67,7 @@ int main(int argc, char **argv)
   char sizeoffile[10];
 	u32 timeL[12], timeH[12];
 	if(init_timer(1) == XST_FAILURE){
-		//xil_printf("timer :(\n");
+		////xil_printf("timer :(\n");
 		//return 0;
 	}
 	start_timer(1);
@@ -83,6 +95,7 @@ int main(int argc, char **argv)
 	#else
 
   i = 0;
+
   while(*file != LAST_DIGIT)
   {
 	  sizeoffile[i++] = *file;
@@ -113,13 +126,13 @@ int main(int argc, char **argv)
 
   //xil_printf("Começar FSL\n");
 
-  char *aux_debug;
+  //char *aux_debug;
 
 	cputfsl(FILE_END_CODE, 0);	// send FILE_END_CODE for the accelarator to recognise it
 
 	char to_send[4];
 
-	for(file_aux=file, i=0; file_aux < end; file_aux++, i++)
+	for(i=0; file_aux < end; file_aux++, i++)
 	{
 		to_send[i] = *file_aux;
 
@@ -132,7 +145,7 @@ int main(int argc, char **argv)
 
 	// send remaining bytes
 	to_send[i] = FILE_END_CODE;
-	putfsl((u32*)to_send, 0);
+	putfsl(*((u32*)to_send), 0);
 	//xil_printf("Enviei o file end code\n");
 
 	//------ receive results ------
@@ -151,8 +164,8 @@ int main(int argc, char **argv)
 	}
 
 	//DEBUG
-		for(i=0; i<256; i++)
-			stats[i] = i;
+/*		for(i=0; i<256; i++)
+			stats[i] = i;*/
 
 	//------- END FSL -----------
 
@@ -196,6 +209,15 @@ int main(int argc, char **argv)
   }
 
   stats[FILE_END_CODE] = 1;
+
+#if XPAR_CPU_ID == DEBUG_CORE_ID
+	xil_printf("counts on core %d after synching all\n", XPAR_CPU_ID);
+	for(i=0; i<256; i++) {
+		xil_printf("%d -> ", i);
+		xil_printf("%d\n", stats[i]);
+	}
+#endif
+
 	//------- END SYNC and SUM
 
   for(i=0; i<256; i++)
@@ -273,8 +295,9 @@ int main(int argc, char **argv)
 	tree_to_table(huffman_tree, encoding_table, 0, 1);
 
   // Sync with all cores
-  *sharedstate = 0x0;
+  /**sharedstate = 0x0;
   while(*sharedstate != 0x1);
+*/
 
   // Put table in internal memory
 
@@ -303,7 +326,7 @@ int main(int argc, char **argv)
 	write_file(out, file, outbuf_len);
 	#else
 	timeH[10] = get_timer64_val(&(timeL[10]));
-	timeH[11] = get_timer64_val(&(timeL[11]));
+	timeH[11] = get_timer64_val(&timeL[11]);
 
 	//xil_printf("start compute_stats(): %d ms\n", (int) conv2_cycles_to_msecs(timeH[0], timeL[0]));
 	//xil_printf("finish compute_stats(): %d ms\n", (int) conv2_cycles_to_msecs(timeH[1], timeL[1]));
