@@ -9,7 +9,7 @@
 
 #include "fsl.h"
 
-#define DEBUG_CORE_ID 10
+#define DEBUG_CORE_ID 2
 
 /**
  * Global to sync all cores
@@ -212,19 +212,11 @@ int main(int argc, char **argv) {
 	// Add results from core 3 to core 2 and write to its memory section
 	section_aux = base_addr3;	// points to results written by core 3
 	u32 * section_aux_2 = (u32*) base_addr;	// points to results written by core 2 itself
-/*	for(i = 0; i < 256; i++) {
+	for(i = 0; i < 256; i++) {
 		*section_aux_2 = stats[i] + *section_aux;
 		section_aux++;
 		section_aux_2++;
-	}*/
-
-#if XPAR_CPU_ID == DEBUG_CORE_ID
-	xil_printf("counts that core %d read from 3's shared memory\n", XPAR_CPU_ID);
-	for(i=0; i<256; i++) {
-		xil_printf("%d -> ", i);
-		xil_printf("%d\n", base_addr3[i]);
 	}
-#endif
 
 #if XPAR_CPU_ID == DEBUG_CORE_ID
 	xil_printf("counts that core %d read from 3's shared memory\n", XPAR_CPU_ID);

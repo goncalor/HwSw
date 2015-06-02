@@ -13,7 +13,7 @@
 #include "fsl.h"
 #endif
 
-#define DEBUG_CORE_ID 1
+#define DEBUG_CORE_ID 10
 
 /**
  * Global to sync all cores
@@ -182,13 +182,20 @@ int main(int argc, char **argv)
 
   //xil_printf("Sincronizei com o core 1\n");
 
-  u32 * section_aux = (u32*) base_addr1;
-
+  u32 * section_aux = base_addr1;
   // Add core 1 results with local
   for(i = 0; i < 256; i++){
     stats[i] += *section_aux;
     section_aux++;
   }
+
+#if XPAR_CPU_ID == DEBUG_CORE_ID
+	xil_printf("counts on core %d after synching with core 1\n", XPAR_CPU_ID);
+	for(i=0; i<256; i++) {
+		xil_printf("%d -> ", i);
+		xil_printf("%d\n", stats[i]);
+	}
+#endif
 
   //xil_printf("Vou tentar sincroniar com o core 2\n");
 
@@ -201,7 +208,6 @@ int main(int argc, char **argv)
   //xil_printf("Sincronizei com o core 2\n");
 
   section_aux = base_addr2;
-
   // Add core 2 results with local
   for(i = 0; i < 256; i++){
     stats[i] += *section_aux;
@@ -280,7 +286,7 @@ int main(int argc, char **argv)
 	timeH[4] = get_timer64_val(&(timeL[4]));
 	#endif
 
-	//HuffmanPrint(huffman_tree, (char *)file);
+	HuffmanPrint(huffman_tree, (char *)file);
 
 	#ifdef MB
 	timeH[5] = get_timer64_val(&(timeL[5]));
