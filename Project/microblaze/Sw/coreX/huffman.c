@@ -9,7 +9,7 @@
 
 #include "fsl.h"
 
-#define DEBUG_CORE_ID 2
+#define DEBUG_CORE_ID 10
 
 /**
  * Global to sync all cores
@@ -37,6 +37,8 @@ volatile char *sharedstate3 =
 #if XPAR_CPU_ID == 2 || XPAR_CPU_ID == 3
 volatile char *sharedstate2 = (char *)XPAR_AXI_BRAM_CTRL_1_S_AXI_BASEADDR + 2;
 #endif
+
+char * shared_tree = (char *) (XPAR_AXI_BRAM_CTRL_0_S_AXI_BASEADDR);
 
 u32 * sync0 = (u32 *) XPAR_AXI_BRAM_CTRL_1_S_AXI_BASEADDR + 4;
 u32 * sync1 = (u32 *) XPAR_AXI_BRAM_CTRL_1_S_AXI_BASEADDR + 5;
@@ -102,6 +104,7 @@ int main(int argc, char **argv) {
 	// Calculate the start pointer and end pointer
 	size = orig_size / 4 * XPAR_CPU_ID;
 
+	char *begin = file + size;
 	char *file_aux = file + size;
 	#if XPAR_CPU_ID == 3
 	char *end = file_aux + orig_size/4 + orig_size%4;
@@ -267,12 +270,8 @@ int main(int argc, char **argv) {
 #endif
 
 
-#ifdef debug
-	for(i=0; i<256; i++) {
-		xil_printf("%d -> ", i);
-		xil_printf("%d\n", stats[i]);
-	}
-#endif
+	while(*sharedstate != 2)
+		;
 
 	// Sync with core 0 (wait until table is built)
 	/*while (*sharedstate != 0x0)
@@ -281,10 +280,15 @@ int main(int argc, char **argv) {
 
 	// ponteiro para a memÃ³ria externa com a tabela de
 	// codificaÃ§Ã£o completa.
-	char *encoding_table = NULL;	//TODO
 
 	// encode the buffer
-	//unsigned outbuf_len = encode_file((char *) file, (char *) file, encoding_table);
+#if XPAR_CPU_ID == 3
+	unsigned outbuf_len = encode_file((char *) begin,
+			(char *) file+orig_size+orig_size*XPAR_CPU_ID, shared_tree, orig_size/4 + orig_size%4);
+#else
+	unsigned outbuf_len = encode_file((char *) begin,
+			(char *) file+orig_size+orig_size*XPAR_CPU_ID, shared_tree, orig_size/4);
+#endif
 
 	// Write outbuf_len to specific memory section so that core 1 can read and
 	// print to screen

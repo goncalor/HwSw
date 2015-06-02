@@ -13,7 +13,7 @@
 #include "fsl.h"
 #endif
 
-#define DEBUG_CORE_ID 10
+#define DEBUG_CORE_ID 1
 
 /**
  * Global to sync all cores
@@ -35,6 +35,8 @@ volatile char *sharedstate3 = (char *)XPAR_AXI_BRAM_CTRL_1_S_AXI_BASEADDR + 3;
  */
 u32 * base_addr1 = (u32 *) (XPAR_AXI_BRAM_CTRL_1_S_AXI_BASEADDR + 4);
 u32 * base_addr2 = (u32 *) (XPAR_AXI_BRAM_CTRL_1_S_AXI_BASEADDR + 0x400 + 4);
+
+char * shared_tree = (char *) (XPAR_AXI_BRAM_CTRL_0_S_AXI_BASEADDR);
 
 /* Must always be CPU0
    Code below relies on that */
@@ -115,6 +117,7 @@ int main(int argc, char **argv)
 
   //xil_printf("Block size: %d\n", size);
 
+  char *begin = file + size;
   char *file_aux = file + size;
 //xil_printf("first read char %d\n", *file_aux_char);
   char *end = file_aux + orig_size/4;
@@ -297,8 +300,10 @@ int main(int argc, char **argv)
 	#endif
 
 	// let's reuse the stats array as a table for the codewords obtained from the tree
-	char *encoding_table = (char *) stats;
-	tree_to_table(huffman_tree, encoding_table, 0, 1);
+	//char *encoding_table = (char *) stats;
+	tree_to_table(huffman_tree, shared_tree, 0, 1);
+
+	*sharedstate = 2;
 
   // Sync with all cores
   /**sharedstate = 0x0;
@@ -316,7 +321,8 @@ int main(int argc, char **argv)
 	#endif
 
 	// encode the buffer
-	unsigned outbuf_len = encode_file((char *)file, (char *)file, encoding_table);
+	unsigned outbuf_len = encode_file((char *) begin,
+			(char *) file+orig_size+orig_size*XPAR_CPU_ID, shared_tree, orig_size/4);
 
   // Write owns outbuf_len to stdout
   // then read from core 2, 3 and 4 memory section
@@ -327,12 +333,31 @@ int main(int argc, char **argv)
 	timeH[9] = get_timer64_val(&(timeL[9]));
 	#endif
 
+	char aux_mem_pos;
+	for(i=0; i<4; i++)
+	{
+		xil_printf("compressed region %d\n", i);
+		int k;
+		for(k=0; k<10; k++)
+		{
+			int j;
+			aux_mem_pos = *((char*) file+orig_size+orig_size*i+k);
+
+			for(j=0; j<8; j++)
+			{
+				xil_printf("%d", (aux_mem_pos>>(7-j)&1));
+			}
+			xil_printf(" ");
+		}
+		xil_printf("\n\n");
+	}
+
 	#ifndef MB
 	out = strcat(argv[1], "_comp");
 	write_file(out, file, outbuf_len);
 	#else
 	timeH[10] = get_timer64_val(&(timeL[10]));
-	timeH[11] = get_timer64_val(&timeL[11]);
+	timeH[11] = get_timer64_val(&(timeL[11]));
 
 	//xil_printf("start compute_stats(): %d ms\n", (int) conv2_cycles_to_msecs(timeH[0], timeL[0]));
 	//xil_printf("finish compute_stats(): %d ms\n", (int) conv2_cycles_to_msecs(timeH[1], timeL[1]));
