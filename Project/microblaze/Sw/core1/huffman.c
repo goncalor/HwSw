@@ -16,17 +16,17 @@
 /**
  * Global to sync all cores
  */
-volatile unsigned int *sharedstate = (unsigned int *)XPAR_AXI_BRAM_CTRL_1_S_AXI_BASEADDR;
+volatile char *sharedstate = (char *)XPAR_AXI_BRAM_CTRL_1_S_AXI_BASEADDR;
 
 /**
  * Global to sync core 0 and 1
  */
-volatile unsigned int *sharedstate1 = (unsigned int *)XPAR_AXI_BRAM_CTRL_1_S_AXI_BASEADDR + 1;
+volatile char *sharedstate1 = (char *)XPAR_AXI_BRAM_CTRL_1_S_AXI_BASEADDR + 1;
 
 /**
  * Global to sync core 0 and 2
  */
-volatile unsigned int *sharedstate3 = (unsigned int *)XPAR_AXI_BRAM_CTRL_1_S_AXI_BASEADDR + 3;
+volatile char *sharedstate3 = (char *)XPAR_AXI_BRAM_CTRL_1_S_AXI_BASEADDR + 3;
 
 /**
  * Base address to share results
@@ -45,7 +45,17 @@ int main(int argc, char **argv)
 {
 	int i, j;
 	char ascii[256];
-  *sharedstate = 0x1;
+
+  u32 * sync0 = (u32 *) XPAR_AXI_BRAM_CTRL_1_S_AXI_BASEADDR + 4;
+  u32 * sync1 = (u32 *) XPAR_AXI_BRAM_CTRL_1_S_AXI_BASEADDR + 5;
+  u32 * sync2 = (u32 *) XPAR_AXI_BRAM_CTRL_1_S_AXI_BASEADDR + 6;
+  u32 * sync3 = (u32 *) XPAR_AXI_BRAM_CTRL_1_S_AXI_BASEADDR + 7;
+
+  /*
+  *sync0 = 0x1;
+
+  while(*sync0 != 0x1 || *sync1 != 0x1 || *sync2 != 0x1 || *sync3 != 0x1);
+*/
 
 	#ifndef MB
 	char * file = malloc(MAX_FILE_SIZE*sizeof(char));
@@ -55,7 +65,7 @@ int main(int argc, char **argv)
   char sizeoffile[10];
 	u32 timeL[12], timeH[12];
 	if(init_timer(1) == XST_FAILURE){
-		//xil_printf("timer :(\n");
+		////xil_printf("timer :(\n");
 		//return 0;
 	}
 	start_timer(1);
@@ -274,8 +284,9 @@ char *aux_debug;
 	tree_to_table(huffman_tree, encoding_table, 0, 1);
 
   // Sync with all cores
-  *sharedstate = 0x0;
+  /**sharedstate = 0x0;
   while(*sharedstate != 0x1);
+*/
 
   // Put table in internal memory
 
@@ -322,7 +333,7 @@ char *aux_debug;
 
 	// Print statistics of compression
 	//xil_printf("----------------STATS---------------");
-	putchar('\n');
+	//putchar('\n');
 	//xil_printf("Compressed file");
 
 	#ifndef MB
