@@ -124,7 +124,7 @@ int main(int argc, char **argv)
 
   //---------- start FSL ---------
 
-  //xil_printf("Começar FSL\n");
+  //xil_printf("ComeÃ§ar FSL\n");
 
   //char *aux_debug;
 

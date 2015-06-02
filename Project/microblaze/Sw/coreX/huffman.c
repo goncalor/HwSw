@@ -112,7 +112,7 @@ int main(int argc, char **argv) {
 	  //---------- start FSL ---------
 
 #if XPAR_CPU_ID == DEBUG_CORE_ID
-	xil_printf("core %d come�a FSL\n", XPAR_CPU_ID);
+	xil_printf("core %d começa FSL\n", XPAR_CPU_ID);
 #endif
 
 	// send FILE_END_CODE for the accelarator to recognise it
@@ -145,7 +145,7 @@ int main(int argc, char **argv) {
 	//------ receive results ------
 
 #if XPAR_CPU_ID == DEBUG_CORE_ID
-	xil_printf("core %d come�a a receber resultados\n", XPAR_CPU_ID);
+	xil_printf("core %d começa a receber resultados\n", XPAR_CPU_ID);
 #endif
 
 	int tmp;
@@ -279,8 +279,8 @@ int main(int argc, char **argv) {
 		;
 	*sharedstate = 0x1;*/
 
-	// ponteiro para a memória externa com a tabela de
-	// codificação completa.
+	// ponteiro para a memÃ³ria externa com a tabela de
+	// codificaÃ§Ã£o completa.
 	char *encoding_table = NULL;	//TODO
 
 	// encode the buffer
