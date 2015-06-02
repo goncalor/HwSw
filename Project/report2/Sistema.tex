@@ -1,0 +1,35 @@
+O sistema opera a 75MHz com 4 MicroBlazes com a seguinte configuração.
+O processador mestre possui uma memória local de 64kB, 2 \texttt{AXI~Timers} de 32 bits ligados em cascata --- que resulta num \textit{timer} de 64 bits --- e duas \textit{caches} de 8~kB --- uma para dados e outra para instruções. Os restantes processadores escravos possuem uma memória local de 16 kB com a mesma configuração de cache (ambas as caches apresentam uma política \textit{write through}). São usadas duas memórias internas de 4kB em que uma está ligada no \textit{bus} \texttt{AXI} --- de forma a tomar partido da cache --- e a outra ligada ao \textit{bus} \texttt{AXI Lite} --- para não ter cache. A primeira memória interna ligada ao \texttt{AXI} é usada para a tabela de conversões, de caracter para representação de Huffman. A memória interna que não está ligada à cache é usada da seguinte forma:
+
+\begin{itemize}
+\item Primeiros 4 bytes para sincronizar os vários processadores.
+\item Desde o endereço 0x4 até 0x403 é usado pelo processador 1 para partilhar contagens com o processador 0.
+\item Desde o endereço 0x404 até 0x803 é usado pelo processador 2 para partilhar contagens com o processador 0.
+\item Os restantes endereços são usados pelo processador 3 partilhar contagens com o processador 2.
+\end{itemize}
+
+A memória externa está ligada através do \textit{bus} AXI4, de maneira a tomar partido da \textit{cache} de dados e instruções.
+
+O programa usado no processador mestre usa 57kB e os restantes 10kB.
+
+A \textit{stack} do processador mestre foi modificada pois a pesquisa na árvore é feita recursivamente. Como no pior caso a árvore tem 256 níveis podem ser ocupados aproximadamente $256 \times (4 + 4 + 4) = 3072$ B em \textit{stack}, visto que cada chamada recursiva usa dois ponteiros mais um \texttt{char} e \texttt{short} --- assumindo que são usados 4 bytes devido a alinhamentos. Contabilizando outros dados que são colocados na \textit{stack} por cada chamada, estima-se que o tamanho da \textit{stack} possa chegar a cerca de 5~kB. Para ter margem de segurança definiu-se no \textit{linker script} uma \textit{stack} com o número redondo de 10~kB.
+
+Os restantes processadores usam 1kB de \textit{stack} e de \textit{heap}, visto que o processamento feito não necessita de uma grande quantidade de memória.
+
+Também não foi usada qualquer optimização por parte do compilador (-o0).
+
+Alguns valores relativos à ocupação do sistema (valor absoluto e percentagem de ocupação) são:
+
+% Precisa de ser actualizado
+
+\begin{verbatim}
+    Slice registers                2850        5 %
+    Slice LUTs                     3746       13 %
+       used as Memory               422
+    occupied Slices                1515       22 %
+    LUT Flip Flop pairs used       4414
+    RAMB16BWERs                    14         12 %
+    RAMB8BWERs                     0           0 %
+    DSP48A1s                       3           5 %
+\end{verbatim}
+

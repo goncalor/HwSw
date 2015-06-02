@@ -1,0 +1,58 @@
+\documentclass[a4paper]{article}
+
+\input{includes.tex}
+
+\begin{document}
+	\input{cover.tex}
+
+	\tableofcontents
+	\pagenumbering{gobble}
+
+  \pagebreak
+
+  \pagenumbering{arabic}
+  \setcounter{page}{1}
+
+	\section{Introdução}
+  %\input{Introduction.tex}
+
+	\section{Codificação de Huffman}
+	%\label{sec:theory}
+  %\input{Huffman.tex}
+
+	\section{Software}
+  %\input{Software.tex}
+
+  \section{Sistema}
+  \input{Sistema.tex}
+
+	\section{Acelerador}
+	%\label{sec:accelerator}
+  %\input{Accelerador.tex}
+
+	\section{Resultados}
+	%\label{sec:results}
+  %\input{Resultados.tex}
+
+	\pagebreak
+
+	\section{Conclusão}
+  %\input{Conclusion.tex}
+
+  \pagebreak
+
+  \listoffigures
+  \listoftables
+
+	% references
+    \nocite{*}
+	\bibliographystyle{plain}
+	\bibliography{refs} % no spaces between commas
+
+
+  \pagebreak
+
+  % anexo com as tabelas raw do acelerador
+  %\input{appendix.tex}
+
+\end{document}
