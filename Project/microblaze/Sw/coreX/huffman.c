@@ -63,17 +63,53 @@ int main(int argc, char **argv) {
 	char sizeoffile[10];
 	char *file = (char *) (XPAR_MCB_DDR2_S0_AXI_BASEADDR + 0x100000);
 
-	/*
-#if XPAR_CPU_ID == 0
-	*sync1 = 0x1;
-#elif XPAR_CPU_ID == 2
-	*sync2 = 0x1;
-#elif XPAR_CPU_ID == 3
-	*sync3 = 0x1;
-#endif
+  /**
+   * Global Sync for startup
+   */
 
-	//while(*sync0 != 0x1 || *sync1 != 0x1 || *sync2 != 0x1 || *sync3 != 0x1);
-*/
+  #if XPAR_CPU_ID == 0
+    // Sync core 1
+
+    // Wait for core 3
+    while(*sharedstate != 0x3);
+
+    // Wait for core 2
+    while(*sharedstate != 0x2);
+
+    // Unlock cores waiting for core 1
+    *sharedstate = 0x1;
+
+    // Wait for core 0
+    while(*sharedstate != 0x0);
+  #elif XPAR_CPU_ID == 2
+    // Sync core 2
+
+    // Wait for core 3
+    while(*sharedstate != 0x3);
+
+    // Unlock cores waiting for core 1
+    *sharedstate = 0x2;
+
+    // Wait for core 1
+    while(*sharedstate != 0x1);
+
+    // Wait for core 0
+    while(*sharedstate != 0x0);
+  #elif XPAR_CPU_ID == 3
+    // Sync core 3
+
+    // Unlock cores waiting for core 1
+    *sharedstate = 0x3;
+
+    // Wait for core 2
+    while(*sharedstate != 0x2);
+
+    // Wait for core 1
+    while(*sharedstate != 0x1);
+
+    // Wait for core 0
+    while(*sharedstate != 0x0);
+  #endif
 
 #if XPAR_CPU_ID == DEBUG_CORE_ID
 	xil_printf("core %d antes do last digit\n", XPAR_CPU_ID);

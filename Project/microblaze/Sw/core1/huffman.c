@@ -50,16 +50,21 @@ int main(int argc, char **argv)
 	int i, j;
 	char ascii[256];
 
-  u32 * sync0 = (u32 *) XPAR_AXI_BRAM_CTRL_1_S_AXI_BASEADDR + 4;
-  u32 * sync1 = (u32 *) XPAR_AXI_BRAM_CTRL_1_S_AXI_BASEADDR + 5;
-  u32 * sync2 = (u32 *) XPAR_AXI_BRAM_CTRL_1_S_AXI_BASEADDR + 6;
-  u32 * sync3 = (u32 *) XPAR_AXI_BRAM_CTRL_1_S_AXI_BASEADDR + 7;
+  /**
+   * Global Sync for startup
+   */
 
-  /*
-  *sync0 = 0x1;
+  // Wait for core 3
+  while(*sharedstate != 0x3);
 
-  while(*sync0 != 0x1 || *sync1 != 0x1 || *sync2 != 0x1 || *sync3 != 0x1);
-*/
+  // Wait for core 2
+  while(*sharedstate != 0x2);
+
+  // Wait for core 1
+  while(*sharedstate != 0x1);
+
+  // Unlock cores waiting for core 0
+  *sharedstate = 0x0;
 
 	#ifndef MB
 	char * file = malloc(MAX_FILE_SIZE*sizeof(char));
