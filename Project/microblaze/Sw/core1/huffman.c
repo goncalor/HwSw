@@ -318,8 +318,10 @@ int main(int argc, char **argv)
 
 	// encode the buffer
 	unsigned outbuf_len = encode_file((char *) begin,
-			(char *) file+orig_size+orig_size*XPAR_CPU_ID,
+			(char *) file+orig_size+orig_size*XPAR_CPU_ID+4,
 			shared_tree, orig_size/4);
+
+	*(unsigned*)((char *) file+orig_size+orig_size*XPAR_CPU_ID) = outbuf_len;
 
 	// wait until all cores finish encoding their parts
 	while(*sharedstate1!=4 || *sharedstate2!=4 || *sharedstate3!=4)
@@ -333,12 +335,13 @@ int main(int argc, char **argv)
 	char aux_mem_pos;
 	for(i=0; i<4; i++)
 	{
-		xil_printf("compressed region %d\n", i);
+		xil_printf("compressed region %d. total size %d (bytes)\n", i,
+				*(unsigned*)((char *) file+orig_size+orig_size*i));
 		int k;
 		for(k=0; k<10; k++)
 		{
 			int j;
-			aux_mem_pos = *((char*) file+orig_size+orig_size*i+k);
+			aux_mem_pos = *((char*) file+orig_size+orig_size*i+4+k);
 
 			for(j=0; j<8; j++)
 			{

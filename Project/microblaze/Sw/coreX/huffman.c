@@ -295,13 +295,15 @@ int main(int argc, char **argv) {
 	// encode the buffer into a specific memory section
 #if XPAR_CPU_ID == 3
 	unsigned outbuf_len = encode_file((char *) begin,
-			(char *) file+orig_size+orig_size*XPAR_CPU_ID,
+			(char *) file+orig_size+orig_size*XPAR_CPU_ID+4,
 			shared_tree, orig_size/4 + orig_size%4);
 #else
 	unsigned outbuf_len = encode_file((char *) begin,
-			(char *) file+orig_size+orig_size*XPAR_CPU_ID,
+			(char *) file+orig_size+orig_size*XPAR_CPU_ID+4,
 			shared_tree, orig_size/4);
 #endif
+
+	*(unsigned*)((char *) file+orig_size+orig_size*XPAR_CPU_ID) = outbuf_len;
 
 	// tell core 0 that this core finished encoding his part
 	#if XPAR_CPU_ID == 0
