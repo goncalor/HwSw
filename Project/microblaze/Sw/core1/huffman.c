@@ -26,6 +26,11 @@ volatile char *sharedstate = (char *)XPAR_AXI_BRAM_CTRL_1_S_AXI_BASEADDR;
 volatile char *sharedstate1 = (char *)XPAR_AXI_BRAM_CTRL_1_S_AXI_BASEADDR + 1;
 
 /**
+ * Global to sync core 0 and 1
+ */
+volatile char *sharedstate2 = (char *)XPAR_AXI_BRAM_CTRL_1_S_AXI_BASEADDR + 2;
+
+/**
  * Global to sync core 0 and 2
  */
 volatile char *sharedstate3 = (char *)XPAR_AXI_BRAM_CTRL_1_S_AXI_BASEADDR + 3;
@@ -300,14 +305,8 @@ int main(int argc, char **argv)
 	//char *encoding_table = (char *) stats;
 	tree_to_table(huffman_tree, shared_tree, 0, 1);
 
+	// inform other cores the tree is ready to be used
 	*sharedstate = 2;
-
-  // Sync with all cores
-  /**sharedstate = 0x0;
-  while(*sharedstate != 0x1);
-*/
-
-  // Put table in internal memory
 
 	#ifdef MB
 	timeH[7] = get_timer64_val(&(timeL[7]));
@@ -319,17 +318,18 @@ int main(int argc, char **argv)
 
 	// encode the buffer
 	unsigned outbuf_len = encode_file((char *) begin,
-			(char *) file+orig_size+orig_size*XPAR_CPU_ID, shared_tree, orig_size/4);
+			(char *) file+orig_size+orig_size*XPAR_CPU_ID,
+			shared_tree, orig_size/4);
 
-  // Write owns outbuf_len to stdout
-  // then read from core 2, 3 and 4 memory section
-
-  // Print everything in order to stdout
+	// wait until all cores finish encoding their parts
+	while(*sharedstate1!=4 || *sharedstate2!=4 || *sharedstate3!=4)
+		;
 
 	#ifdef MB
 	timeH[9] = get_timer64_val(&(timeL[9]));
 	#endif
 
+	// write (part of) compressed memory sections to stdout
 	char aux_mem_pos;
 	for(i=0; i<4; i++)
 	{
