@@ -72,43 +72,16 @@ int main(int argc, char **argv) {
 
     // Wait for core 3
     while(*sharedstate != 0x3);
-
-    // Wait for core 2
-    while(*sharedstate != 0x2);
-
-    // Unlock cores waiting for core 1
-    *sharedstate = 0x1;
-
-    // Wait for core 0
-    while(*sharedstate != 0x0);
   #elif XPAR_CPU_ID == 2
     // Sync core 2
 
     // Wait for core 3
     while(*sharedstate != 0x3);
-
-    // Unlock cores waiting for core 1
-    *sharedstate = 0x2;
-
-    // Wait for core 1
-    while(*sharedstate != 0x1);
-
-    // Wait for core 0
-    while(*sharedstate != 0x0);
   #elif XPAR_CPU_ID == 3
     // Sync core 3
 
     // Unlock cores waiting for core 1
     *sharedstate = 0x3;
-
-    // Wait for core 2
-    while(*sharedstate != 0x2);
-
-    // Wait for core 1
-    while(*sharedstate != 0x1);
-
-    // Wait for core 0
-    while(*sharedstate != 0x0);
   #endif
 
 #if XPAR_CPU_ID == DEBUG_CORE_ID

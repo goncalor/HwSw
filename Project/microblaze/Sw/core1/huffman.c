@@ -13,7 +13,7 @@
 #include "fsl.h"
 #endif
 
-#define DEBUG_CORE_ID 1
+#define DEBUG_CORE_ID 10
 
 /**
  * Global to sync all cores
@@ -54,17 +54,9 @@ int main(int argc, char **argv)
    * Global Sync for startup
    */
 
+	//xil_printf("before sync 3\n");
   // Wait for core 3
   while(*sharedstate != 0x3);
-
-  // Wait for core 2
-  while(*sharedstate != 0x2);
-
-  // Wait for core 1
-  while(*sharedstate != 0x1);
-
-  // Unlock cores waiting for core 0
-  *sharedstate = 0x0;
 
 	#ifndef MB
 	char * file = malloc(MAX_FILE_SIZE*sizeof(char));
@@ -74,8 +66,8 @@ int main(int argc, char **argv)
   char sizeoffile[10];
 	u32 timeL[12], timeH[12];
 	if(init_timer(1) == XST_FAILURE){
-		////xil_printf("timer :(\n");
-		//return 0;
+		xil_printf("timer :(\n");
+		return 0;
 	}
 	start_timer(1);
 	#endif
@@ -234,7 +226,7 @@ int main(int argc, char **argv)
 
 	//------- END SYNC and SUM
 
-  for(i=0; i<256; i++)
+  //for(i=0; i<256; i++)
   		//xil_printf("%d: \t %d\n", i, stats[i]);
 
 	timeH[1] = get_timer64_val(&(timeL[1]));
@@ -294,7 +286,7 @@ int main(int argc, char **argv)
 	timeH[4] = get_timer64_val(&(timeL[4]));
 	#endif
 
-	HuffmanPrint(huffman_tree, (char *)file);
+	//HuffmanPrint(huffman_tree, (char *)file);
 
 	#ifdef MB
 	timeH[5] = get_timer64_val(&(timeL[5]));
@@ -361,20 +353,18 @@ int main(int argc, char **argv)
 	out = strcat(argv[1], "_comp");
 	write_file(out, file, outbuf_len);
 	#else
-	timeH[10] = get_timer64_val(&(timeL[10]));
-	timeH[11] = get_timer64_val(&(timeL[11]));
 
-	//xil_printf("start compute_stats(): %d ms\n", (int) conv2_cycles_to_msecs(timeH[0], timeL[0]));
-	//xil_printf("finish compute_stats(): %d ms\n", (int) conv2_cycles_to_msecs(timeH[1], timeL[1]));
-	//xil_printf("start buildHuffmanTree(): %d ms\n", (int) conv2_cycles_to_msecs(timeH[2], timeL[2]));
-	//xil_printf("finish buildHuffmanTree(): %d ms\n", (int) conv2_cycles_to_msecs(timeH[3], timeL[3]));
-	//xil_printf("start HuffmanPrint(): %d ms\n", (int) conv2_cycles_to_msecs(timeH[4], timeL[4]));
-	//xil_printf("finish HuffmanPrint(): %d ms\n", (int) conv2_cycles_to_msecs(timeH[5], timeL[5]));
-	//xil_printf("start tree_to_table(): %d ms\n", (int) conv2_cycles_to_msecs(timeH[6], timeL[6]));
-	//xil_printf("finish tree_to_table(): %d ms\n", (int) conv2_cycles_to_msecs(timeH[7], timeL[7]));
-	//xil_printf("start encode_file(): %d ms\n", (int) conv2_cycles_to_msecs(timeH[8], timeL[8]));
-	//xil_printf("finish encode_file(): %d ms\n", (int) conv2_cycles_to_msecs(timeH[9], timeL[9]));
-	//xil_printf("time elapsed: %d ms\n", (int) conv2_cycles_to_msecs(timeH[10], timeL[10]));
+	xil_printf("start compute_stats(): %d ms\n", (int) conv2_cycles_to_msecs(timeH[0], timeL[0]));
+	xil_printf("finish compute_stats(): %d ms\n", (int) conv2_cycles_to_msecs(timeH[1], timeL[1]));
+	xil_printf("start buildHuffmanTree(): %d ms\n", (int) conv2_cycles_to_msecs(timeH[2], timeL[2]));
+	xil_printf("finish buildHuffmanTree(): %d ms\n", (int) conv2_cycles_to_msecs(timeH[3], timeL[3]));
+	xil_printf("start HuffmanPrint(): %d ms\n", (int) conv2_cycles_to_msecs(timeH[4], timeL[4]));
+	xil_printf("finish HuffmanPrint(): %d ms\n", (int) conv2_cycles_to_msecs(timeH[5], timeL[5]));
+	xil_printf("start tree_to_table(): %d ms\n", (int) conv2_cycles_to_msecs(timeH[6], timeL[6]));
+	xil_printf("finish tree_to_table(): %d ms\n", (int) conv2_cycles_to_msecs(timeH[7], timeL[7]));
+	xil_printf("start encode_file(): %d ms\n", (int) conv2_cycles_to_msecs(timeH[8], timeL[8]));
+	xil_printf("finish encode_file(): %d ms\n", (int) conv2_cycles_to_msecs(timeH[9], timeL[9]));
+	xil_printf("time elapsed: %d ms\n", (int) conv2_cycles_to_msecs(timeH[9], timeL[9]));
 	//xil_printf("time elapsed: %d ms\n", (int) conv2_cycles_to_msecs(timeH[11], timeL[11]));
 	#endif
 
