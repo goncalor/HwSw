@@ -72,43 +72,16 @@ int main(int argc, char **argv) {
 
     // Wait for core 3
     while(*sharedstate != 0x3);
-
-    // Wait for core 2
-    while(*sharedstate != 0x2);
-
-    // Unlock cores waiting for core 1
-    *sharedstate = 0x1;
-
-    // Wait for core 0
-    while(*sharedstate != 0x0);
   #elif XPAR_CPU_ID == 2
     // Sync core 2
 
     // Wait for core 3
     while(*sharedstate != 0x3);
-
-    // Unlock cores waiting for core 1
-    *sharedstate = 0x2;
-
-    // Wait for core 1
-    while(*sharedstate != 0x1);
-
-    // Wait for core 0
-    while(*sharedstate != 0x0);
   #elif XPAR_CPU_ID == 3
     // Sync core 3
 
     // Unlock cores waiting for core 1
     *sharedstate = 0x3;
-
-    // Wait for core 2
-    while(*sharedstate != 0x2);
-
-    // Wait for core 1
-    while(*sharedstate != 0x1);
-
-    // Wait for core 0
-    while(*sharedstate != 0x0);
   #endif
 
 #if XPAR_CPU_ID == DEBUG_CORE_ID
@@ -306,8 +279,6 @@ int main(int argc, char **argv) {
 #endif
 
 
-	while(*sharedstate != 2)
-		;
 
 	// Sync with core 0 (wait until table is built)
 	/*while (*sharedstate != 0x0)
@@ -317,17 +288,30 @@ int main(int argc, char **argv) {
 	// ponteiro para a memÃ³ria externa com a tabela de
 	// codificaÃ§Ã£o completa.
 
-	// encode the buffer
+	// wait for shared_tree to be written by core 0
+	while(*sharedstate != 2)
+		;
+
+	// encode the buffer into a specific memory section
 #if XPAR_CPU_ID == 3
 	unsigned outbuf_len = encode_file((char *) begin,
-			(char *) file+orig_size+orig_size*XPAR_CPU_ID, shared_tree, orig_size/4 + orig_size%4);
+			(char *) file+orig_size+orig_size*XPAR_CPU_ID,
+			shared_tree, orig_size/4 + orig_size%4);
 #else
 	unsigned outbuf_len = encode_file((char *) begin,
-			(char *) file+orig_size+orig_size*XPAR_CPU_ID, shared_tree, orig_size/4);
+			(char *) file+orig_size+orig_size*XPAR_CPU_ID,
+			shared_tree, orig_size/4);
 #endif
 
-	// Write outbuf_len to specific memory section so that core 1 can read and
-	// print to screen
+	// tell core 0 that this core finished encoding his part
+	#if XPAR_CPU_ID == 0
+	*sharedstate1 = 4;
+	#elif XPAR_CPU_ID == 2
+	*sharedstate2 =4;
+	#elif XPAR_CPU_ID == 3
+	*sharedstate3 = 4;
+	#endif
+
 
 	return 0;
 }
