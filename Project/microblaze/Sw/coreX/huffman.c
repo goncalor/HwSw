@@ -40,11 +40,6 @@ volatile char *sharedstate2 = (char *)XPAR_AXI_BRAM_CTRL_1_S_AXI_BASEADDR + 2;
 
 char * shared_tree = (char *) (XPAR_AXI_BRAM_CTRL_0_S_AXI_BASEADDR);
 
-u32 * sync0 = (u32 *) XPAR_AXI_BRAM_CTRL_1_S_AXI_BASEADDR + 4;
-u32 * sync1 = (u32 *) XPAR_AXI_BRAM_CTRL_1_S_AXI_BASEADDR + 5;
-u32 * sync2 = (u32 *) XPAR_AXI_BRAM_CTRL_1_S_AXI_BASEADDR + 6;
-u32 * sync3 = (u32 *) XPAR_AXI_BRAM_CTRL_1_S_AXI_BASEADDR + 7;
-
 /**
  * Base address to share results
  */
@@ -59,7 +54,6 @@ u32 * base_addr = (u32 *) (XPAR_AXI_BRAM_CTRL_1_S_AXI_BASEADDR + 0x800 + 4);
 
 
 int main(int argc, char **argv) {
-	//char ascii[256];
 	char sizeoffile[10];
 	char *file = (char *) (XPAR_MCB_DDR2_S0_AXI_BASEADDR + 0x100000);
 
@@ -203,12 +197,7 @@ int main(int argc, char **argv) {
 	// wait for core 3
 	i=0;
 	while(*sharedstate2 != 0x1)
-	{
-	/*	int k;
-		for(k=0; k<30000;k++)
-			;
-		i%16 ? xil_printf("%d ", i++) : xil_printf("%d\n", i++);*/
-	}
+		;
 	*sharedstate2 = 0x0;
 
 #if XPAR_CPU_ID == DEBUG_CORE_ID
@@ -279,15 +268,6 @@ int main(int argc, char **argv) {
 #endif
 
 
-
-	// Sync with core 0 (wait until table is built)
-	/*while (*sharedstate != 0x0)
-		;
-	*sharedstate = 0x1;*/
-
-	// ponteiro para a memÃ³ria externa com a tabela de
-	// codificaÃ§Ã£o completa.
-
 	// wait for shared_tree to be written by core 0
 	while(*sharedstate != 2)
 		;
@@ -303,9 +283,10 @@ int main(int argc, char **argv) {
 			shared_tree, orig_size/4);
 #endif
 
+	// write lenght of compressed section (in bytes) in the first 4 bytes of the section
 	*(unsigned*)((char *) file+orig_size+orig_size*XPAR_CPU_ID) = outbuf_len;
 
-	// tell core 0 that this core finished encoding his part
+	// tell core 0 that this core finished encoding its part
 	#if XPAR_CPU_ID == 0
 	*sharedstate1 = 4;
 	#elif XPAR_CPU_ID == 2
@@ -313,7 +294,6 @@ int main(int argc, char **argv) {
 	#elif XPAR_CPU_ID == 3
 	*sharedstate3 = 4;
 	#endif
-
 
 	return 0;
 }

@@ -16,23 +16,11 @@
 #define DEBUG_CORE_ID 10
 
 /**
- * Global to sync all cores
+ * Global to sync cores
  */
 volatile char *sharedstate = (char *)XPAR_AXI_BRAM_CTRL_1_S_AXI_BASEADDR;
-
-/**
- * Global to sync core 0 and 1
- */
 volatile char *sharedstate1 = (char *)XPAR_AXI_BRAM_CTRL_1_S_AXI_BASEADDR + 1;
-
-/**
- * Global to sync core 0 and 1
- */
 volatile char *sharedstate2 = (char *)XPAR_AXI_BRAM_CTRL_1_S_AXI_BASEADDR + 2;
-
-/**
- * Global to sync core 0 and 2
- */
 volatile char *sharedstate3 = (char *)XPAR_AXI_BRAM_CTRL_1_S_AXI_BASEADDR + 3;
 
 /**
@@ -43,24 +31,14 @@ u32 * base_addr2 = (u32 *) (XPAR_AXI_BRAM_CTRL_1_S_AXI_BASEADDR + 0x400 + 4);
 
 char * shared_tree = (char *) (XPAR_AXI_BRAM_CTRL_0_S_AXI_BASEADDR);
 
-/* Must always be CPU0
-   Code below relies on that */
-/*#if XPAR_CPU_ID != 0
-#undef XPAR_CPU_ID
-#define XPAR_CPU_ID 0
-#endif*/
-
 int main(int argc, char **argv)
 {
 	int i, j;
 	char ascii[256];
 
   /**
-   * Global Sync for startup
+   * initial synch. core 3 is assumed to be the last to be launched
    */
-
-	//xil_printf("before sync 3\n");
-  // Wait for core 3
   while(*sharedstate != 0x3);
 
 	#ifndef MB
@@ -112,26 +90,14 @@ int main(int argc, char **argv)
   int size;
   int orig_size = atoi(sizeoffile);
 
-  //xil_printf("size %d\n", orig_size);
-
   // Calculate the start pointer and end pointer
   size = orig_size/4 * XPAR_CPU_ID;
 
-  //xil_printf("Block size: %d\n", size);
-
   char *begin = file + size;
   char *file_aux = file + size;
-//xil_printf("first read char %d\n", *file_aux_char);
   char *end = file_aux + orig_size/4;
-//xil_printf("char after last to read %d\n", *((char*)end));
-  //xil_printf("start pointer: 0x%x\n", file_aux);
-  //xil_printf("end pointer: 0x%x\n", end);
 
   //---------- start FSL ---------
-
-  //xil_printf("Começar FSL\n");
-
-  //char *aux_debug;
 
 	cputfsl(FILE_END_CODE, 0);	// send FILE_END_CODE for the accelarator to recognise it
 
@@ -158,7 +124,6 @@ int main(int argc, char **argv)
 	int tmp;
 	for(i=0; i < 256; i = i + 2)
 	{
-		////xil_printf("Fazer get\n");
 		getfsl(tmp, 0);
 
 		stats[i] = (tmp & 0xFFFF0000) >> 16;
@@ -168,24 +133,16 @@ int main(int argc, char **argv)
 		//xil_printf("stats %d -> %d\n", i + 1, stats[i + 1]);
 	}
 
-	//DEBUG
-/*		for(i=0; i<256; i++)
-			stats[i] = i;*/
-
 	//------- END FSL -----------
 
 
 	//------- start SYNC and SUM
-
-	//xil_printf("Vou tentar sincroniar com o core 1\n");
 
   // Sync with core 1
   // Receive from core 1
   while(*sharedstate1 != 0x1)
 	  ;
   *sharedstate1 = 0x0;
-
-  //xil_printf("Sincronizei com o core 1\n");
 
   u32 * section_aux = base_addr1;
   // Add core 1 results with local
@@ -202,15 +159,11 @@ int main(int argc, char **argv)
 	}
 #endif
 
-  //xil_printf("Vou tentar sincroniar com o core 2\n");
-
   // Sync with core 2
   // Receive from core 2
   while(*sharedstate3 != 0x1)
 	  ;
   *sharedstate3 = 0x0;
-
-  //xil_printf("Sincronizei com o core 2\n");
 
   section_aux = base_addr2;
   // Add core 2 results with local
@@ -230,9 +183,6 @@ int main(int argc, char **argv)
 #endif
 
 	//------- END SYNC and SUM
-
-  //for(i=0; i<256; i++)
-  		//xil_printf("%d: \t %d\n", i, stats[i]);
 
 	timeH[1] = get_timer64_val(&(timeL[1]));
 	#endif
@@ -331,7 +281,7 @@ int main(int argc, char **argv)
 	timeH[9] = get_timer64_val(&(timeL[9]));
 	#endif
 
-	// write (part of) compressed memory sections to stdout
+	// write (sample of) compressed memory sections to stdout
 	char aux_mem_pos;
 	for(i=0; i<4; i++)
 	{
@@ -368,7 +318,6 @@ int main(int argc, char **argv)
 	xil_printf("start encode_file(): %d ms\n", (int) conv2_cycles_to_msecs(timeH[8], timeL[8]));
 	xil_printf("finish encode_file(): %d ms\n", (int) conv2_cycles_to_msecs(timeH[9], timeL[9]));
 	xil_printf("time elapsed: %d ms\n", (int) conv2_cycles_to_msecs(timeH[9], timeL[9]));
-	//xil_printf("time elapsed: %d ms\n", (int) conv2_cycles_to_msecs(timeH[11], timeL[11]));
 	#endif
 
 	// Print statistics of compression
@@ -384,5 +333,6 @@ int main(int argc, char **argv)
 	//xil_printf("\tSize of compressed file (bits): %d\n", bits);
 	//xil_printf("\tSize of compressed file (bytes): %d (without header)\n", outbuf_len);
 	#endif
+
 	return 0;
 }
