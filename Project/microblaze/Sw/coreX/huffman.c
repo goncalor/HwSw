@@ -16,20 +16,20 @@
  */
 #if XPAR_CPU_ID != 1
 volatile char *sharedstate =
-		(char *) XPAR_AXI_BRAM_CTRL_1_S_AXI_BASEADDR;
+(char *) XPAR_AXI_BRAM_CTRL_1_S_AXI_BASEADDR;
 #endif
 
 /**
  * Global to sync core 0 and 1
  */
 volatile char *sharedstate1 =
-		(char *) XPAR_AXI_BRAM_CTRL_1_S_AXI_BASEADDR + 1;
+(char *) XPAR_AXI_BRAM_CTRL_1_S_AXI_BASEADDR + 1;
 
 /**
  * Global to sync core 0 and 2
  */
 volatile char *sharedstate3 =
-		(char *) XPAR_AXI_BRAM_CTRL_1_S_AXI_BASEADDR + 3;
+(char *) XPAR_AXI_BRAM_CTRL_1_S_AXI_BASEADDR + 3;
 
 /**
  * Global to sync core 2 and 3
@@ -57,26 +57,26 @@ int main(int argc, char **argv) {
 	char sizeoffile[10];
 	char *file = (char *) (XPAR_MCB_DDR2_S0_AXI_BASEADDR + 0x100000);
 
-  /**
-   * Global Sync for startup
-   */
+	/**
+	 * Global Sync for startup
+	 */
 
-  #if XPAR_CPU_ID == 0
-    // Sync core 1
+	#if XPAR_CPU_ID == 0
+	// Sync core 1
 
-    // Wait for core 3
-    while(*sharedstate != 0x3);
-  #elif XPAR_CPU_ID == 2
-    // Sync core 2
+	// Wait for core 3
+	while(*sharedstate != 0x3);
+	#elif XPAR_CPU_ID == 2
+	// Sync core 2
 
-    // Wait for core 3
-    while(*sharedstate != 0x3);
-  #elif XPAR_CPU_ID == 3
-    // Sync core 3
+	// Wait for core 3
+	while(*sharedstate != 0x3);
+	#elif XPAR_CPU_ID == 3
+	// Sync core 3
 
-    // Unlock cores waiting for core 1
-    *sharedstate = 0x3;
-  #endif
+	// Unlock cores waiting for core 1
+	*sharedstate = 0x3;
+	#endif
 
 #if XPAR_CPU_ID == DEBUG_CORE_ID
 	xil_printf("core %d antes do last digit\n", XPAR_CPU_ID);
@@ -115,7 +115,7 @@ int main(int argc, char **argv) {
 	char *end = file_aux + orig_size/4;
 	#endif
 
-	  //---------- start FSL ---------
+	//---------- start FSL ---------
 
 #if XPAR_CPU_ID == DEBUG_CORE_ID
 	xil_printf("core %d começa FSL\n", XPAR_CPU_ID);
@@ -130,7 +130,7 @@ int main(int argc, char **argv) {
 		to_send[i] = *file_aux;
 
 #if XPAR_CPU_ID == DEBUG_CORE_ID
-	xil_printf("to_send[i] %x\n", to_send[i]);
+		xil_printf("to_send[i] %x\n", to_send[i]);
 #endif
 
 		if(i==3)
@@ -139,7 +139,7 @@ int main(int argc, char **argv) {
 			i=-1;
 
 #if XPAR_CPU_ID == DEBUG_CORE_ID
-	xil_printf("to_send %x\n", *((u32*)to_send));
+			xil_printf("to_send %x\n", *((u32*)to_send));
 #endif
 		}
 	}
@@ -166,7 +166,7 @@ int main(int argc, char **argv) {
 		//xil_printf("stats %d -> %d\n", i + 1, stats[i + 1]);
 	}
 
-	  //---------- END FSL ---------
+	//---------- END FSL ---------
 
 	u32 *section_aux = base_addr;
 

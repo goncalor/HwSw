@@ -36,17 +36,17 @@ int main(int argc, char **argv)
 	int i, j;
 	char ascii[256];
 
-  /**
-   * initial synch. core 3 is assumed to be the last to be launched
-   */
-  while(*sharedstate != 0x3);
+	/**
+	 * initial synch. core 3 is assumed to be the last to be launched
+	 */
+	while(*sharedstate != 0x3);
 
 	#ifndef MB
 	char * file = malloc(MAX_FILE_SIZE*sizeof(char));
 	char * out;
 	#else
 	char *file = (char *) (XPAR_MCB_DDR2_S0_AXI_BASEADDR + 0x100000);
-  char sizeoffile[10];
+	char sizeoffile[10];
 	u32 timeL[12], timeH[12];
 	if(init_timer(1) == XST_FAILURE){
 		xil_printf("timer :(\n");
@@ -76,28 +76,28 @@ int main(int argc, char **argv)
 	compute_stats((char *) file);
 	#else
 
-  i = 0;
+	i = 0;
 
-  while(*file != LAST_DIGIT)
-  {
-	  sizeoffile[i++] = *file;
-	  file++;
-  }
-  file++;
-  //xil_printf("after LAST_DIGIT %d\n", *file);
-  sizeoffile[i] = '\0';
+	while(*file != LAST_DIGIT)
+	{
+		sizeoffile[i++] = *file;
+		file++;
+	}
+	file++;
+	//xil_printf("after LAST_DIGIT %d\n", *file);
+	sizeoffile[i] = '\0';
 
-  int size;
-  int orig_size = atoi(sizeoffile);
+	int size;
+	int orig_size = atoi(sizeoffile);
 
-  // Calculate the start pointer and end pointer
-  size = orig_size/4 * XPAR_CPU_ID;
+	// Calculate the start pointer and end pointer
+	size = orig_size/4 * XPAR_CPU_ID;
 
-  char *begin = file + size;
-  char *file_aux = file + size;
-  char *end = file_aux + orig_size/4;
+	char *begin = file + size;
+	char *file_aux = file + size;
+	char *end = file_aux + orig_size/4;
 
-  //---------- start FSL ---------
+	//---------- start FSL ---------
 
 	cputfsl(FILE_END_CODE, 0);	// send FILE_END_CODE for the accelarator to recognise it
 
@@ -138,18 +138,18 @@ int main(int argc, char **argv)
 
 	//------- start SYNC and SUM
 
-  // Sync with core 1
-  // Receive from core 1
-  while(*sharedstate1 != 0x1)
-	  ;
-  *sharedstate1 = 0x0;
+	// Sync with core 1
+	// Receive from core 1
+	while(*sharedstate1 != 0x1)
+		;
+	*sharedstate1 = 0x0;
 
-  u32 * section_aux = base_addr1;
-  // Add core 1 results with local
-  for(i = 0; i < 256; i++){
-    stats[i] += *section_aux;
-    section_aux++;
-  }
+	u32 * section_aux = base_addr1;
+	// Add core 1 results with local
+	for(i = 0; i < 256; i++){
+		stats[i] += *section_aux;
+		section_aux++;
+	}
 
 #if XPAR_CPU_ID == DEBUG_CORE_ID
 	xil_printf("counts on core %d after synching with core 1\n", XPAR_CPU_ID);
@@ -159,20 +159,20 @@ int main(int argc, char **argv)
 	}
 #endif
 
-  // Sync with core 2
-  // Receive from core 2
-  while(*sharedstate3 != 0x1)
-	  ;
-  *sharedstate3 = 0x0;
+	// Sync with core 2
+	// Receive from core 2
+	while(*sharedstate3 != 0x1)
+		;
+	*sharedstate3 = 0x0;
 
-  section_aux = base_addr2;
-  // Add core 2 results with local
-  for(i = 0; i < 256; i++){
-    stats[i] += *section_aux;
-    section_aux++;
-  }
+	section_aux = base_addr2;
+	// Add core 2 results with local
+	for(i = 0; i < 256; i++){
+		stats[i] += *section_aux;
+		section_aux++;
+	}
 
-  stats[FILE_END_CODE] = 1;
+	stats[FILE_END_CODE] = 1;
 
 #if XPAR_CPU_ID == DEBUG_CORE_ID
 	xil_printf("counts on core %d after synching all\n", XPAR_CPU_ID);
@@ -328,7 +328,7 @@ int main(int argc, char **argv)
 	#ifndef MB
 	printf("\tSize of compressed file (bits): %d\n", bits);
 	printf("\tSize of compressed file (bytes): %u (without header)\n", outbuf_len);
-  printf("SIZEOF: %lu\n", sizeof(heap_nodes));
+	printf("SIZEOF: %lu\n", sizeof(heap_nodes));
 	#else
 	//xil_printf("\tSize of compressed file (bits): %d\n", bits);
 	//xil_printf("\tSize of compressed file (bytes): %d (without header)\n", outbuf_len);
