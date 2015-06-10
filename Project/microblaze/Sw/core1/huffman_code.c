@@ -315,7 +315,7 @@ void tree_to_table(MinHeapNode* root, char *table, char code, short pos)
 
 // encodes orig into dest. returns the number of bytes written
 // to dest.
-unsigned encode_file(char *orig, char *dest, char *codewords)
+unsigned encode_file(char *orig, char *dest, char *codewords, unsigned len)
 {
 	unsigned orig_ptr, dest_ptr;
 	unsigned short word_len = 8, code_len, bits_used = 0;
@@ -345,7 +345,7 @@ unsigned encode_file(char *orig, char *dest, char *codewords)
 
 		orig_ptr++;
 	}
-	while(ascii != FILE_END_CODE);
+	while(orig_ptr != len);
 
 	dest[dest_ptr] = outword;	// the last codeword has not been written yet. write it!
 	return dest_ptr+1;
