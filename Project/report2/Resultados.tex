@@ -1,0 +1,121 @@
+Após as modificações no sistema e no algoritmo descritas anteriormente os resultados obtidos para cada ficheiro de teste encontram-se na \autoref{tab:time_quadcore}.
+
+\begin{table}[ht]
+    \caption{Tempo de execução de cada parte do algoritmo, com 4 \textit{MicroBlazes} e um acelerador por cada processador}
+    \centerline
+    {
+      \begin{tabular}{|c|r|c|c|r|r|}
+        \hline
+        \textbf{Ficheiro}                             &
+        \multicolumn{1}{c|}{\textbf{Estatísticas}}    &
+        \textbf{Construir Árvore}                     &
+        \textbf{Árvore $\rightarrow$ Tabela}          &
+        \multicolumn{1}{c|}{\textbf{Codificação}}     &
+        \multicolumn{1}{c|}{\textbf{Tamanho}} \\
+        \hline
+        \hline
+        tmp       & \ 2 ms    & \ 0 ms & 0 ms & \ 0 ms    & 14 B    \\ \hline
+        teste     & \ 2 ms    & \ 1 ms & 0 ms & \ 0 ms    & 28 B    \\ \hline
+        pdf       & \ 2 ms    & \ 1 ms & 0 ms & \ 0 ms    & 44 B    \\ \hline
+        read\_me  & \ 6 ms    & \ 1 ms & 1 ms & \ 8 ms    & 2981 B  \\ \hline
+        alice     & 251 ms    & \ 2 ms & 1 ms & 676 ms    & 174 KB  \\ \hline
+        BIG\_READ & 15 268 ms  & \ 4 ms & 0 ms & 42 587 ms  & 10,4 MB \\
+        \hline
+      \end{tabular}
+    }
+
+    \label{tab:time_quadcore}
+  \end{table}
+
+Na \autoref{tab:time_hardware/software_speedup} encontra-se a comparação entre os tempos de cálculo de estatísticas entre o novo sistema e o sistema da 1ª parte deste trabalho.
+
+\begin{table}[h]
+    \caption{Comparação das contagens (estatísticas) em software com acelerador e em hardware/software com 4 \textit{MicroBlazes}. Respectivo \textit{speedup}}
+    
+    \centerline{
+      \begin{tabular}{|c|r|r|r|}
+        \hline
+        \textbf{Ficheiro}                &
+        \textbf{Hardware/Software}       &
+        \textbf{4 MicroBlazes}           &
+        \multicolumn{1}{c|}{\textbf{Speedup}}       \\ \hline \hline
+        tmp        & \ 1 ms     & \ 2 ms     & 0,50   \\ \hline
+        teste      & \ 1 ms     & \ 2 ms     & 0,50   \\ \hline
+        pdf        & \ 1 ms     & \ 2 ms     & 0,50   \\ \hline
+        read\_me   & \ 6 ms     & \ 6 ms     & 1,00   \\ \hline
+        alice      & 314 ms     & 251 ms     & 1,25   \\ \hline
+        BIG\_READ  & 19 231 ms   & 15 268 ms   & 1,25   \\
+        \hline
+      \end{tabular}
+    }
+    
+    \label{tab:time_hardware/software_speedup}
+  \end{table}
+  
+Nos ficheiros de pequenas dimensões --- \texttt{tmp}, \texttt{teste} e \texttt{pdf} --- o \textit{speed up} obtido para as estatísticas é inferior a 1 pois as suas dimensões não justificam o trabalho de processamento extra necessário para sincronizar os vários processadores. O ficheiro \texttt{read\_me} também não apresenta qualquer benefício pelo mesmo motivo.
+
+Nos ficheiros de maiores dimensões --- \texttt{alice} e \texttt{BIG\_READ} --- verifica-se um \textit{speedup} relevante face aos restantes, mas o seu limite de aceleração é atingido. Nesta parte do trabalho o troço de código que envia os caracteres para o hardware foi alterado tendo-se tornado mais lento, visto que se esperaria um \textit{speedup} de aproximadamente 4 e obteve-se apenas 1,25.
+
+Na \autoref{tab:time_encoding_speedup} encontra-se o \textit{speedup} obtido para a codificação do ficheiro para a memória externa.
+
+\begin{table}[H]
+    \caption{Comparação da codificação do ficheiro em hardware/software e em hardware/software com 4 \textit{MicroBlazes}. Respectivo \textit{speedup}}
+    
+    \centerline{
+      \begin{tabular}{|c|r|r|r|}
+        \hline
+        \textbf{Ficheiro}             &
+        \textbf{Hardware/Software}    &
+        \textbf{4 MicroBlazes}        &
+        \multicolumn{1}{c|}{\textbf{Speedup}}       \\ \hline \hline
+        tmp        & \ 0 ms     & \ 0 ms     & N.A.   \\ \hline
+        teste      & \ 0 ms     & \ 0 ms     & N.A.   \\ \hline
+        pdf        & \ 1 ms     & \ 0 ms     & N.A.   \\ \hline
+        read\_me   &  43 ms     & \ 8 ms     & 5,38   \\ \hline
+        alice      & 2 611 ms    & 676 ms     & 3,86   \\ \hline
+        BIG\_READ  & 166 692 ms  & 42 587 ms   & 3,91   \\
+        \hline
+      \end{tabular}
+    }
+    
+    \label{tab:time_encoding_speedup}
+  \end{table}
+
+Como foi referido anteriormente esta é a secção que ocupa mais tempo de processamento. Para ficheiros de pequenas dimensões, a precisão utilizada nas medições do tempo não é suficiente para serem tiradas conclusões relativas ao \textit{speedup}.
+
+O ficheiro \texttt{read\_me} é o único que apresenta um \textit{speedup} superior ao teórico pois o tamanho do ficheiro tem a dimensão perfeita para a cache de dados usada (8~kB). Assim, como o ficheiro cabe na \textit{cache} e este apresenta uma dimensão relativamente grande o \textit{speedup} é superior ao número de processadores disponíveis.
+
+Com os ficheiros \texttt{alice} e \texttt{BIG\_READ} o \textit{speedup} obtido está dentro do esperado, entre 3 e 4.
+
+Na \autoref{tab:speedup_total_software_acc} encontra-se uma comparação dos \textit{speedups} obtidos entre os dois sistemas, o da 1ª parte e o novo, com 4 MicroBlazes e aceleradores.
+
+  \begin{table}[H]
+    \caption{Tempo de execução total e \textit{speedup} global para cada ficheiro}
+    \centerline
+    {
+      \begin{tabular}{|c|r|r|c|}
+        \hline
+        \textbf{Ficheiro}                                &
+        \multicolumn{1}{c|}{\textbf{Hardware/Software}}  &
+		\multicolumn{1}{c|}{\textbf{4 MicroBlazes}}      &
+        \textbf{Speedup}                            \\ \hline \hline
+		tmp       &    \ 1 ms   &    \ 2 ms & 0,50  \\ \hline
+        teste     &    \ 7 ms   &    \ 3 ms & 2,33  \\ \hline
+        pdf       &    \ 5 ms   &    \ 3 ms & 1,67  \\ \hline
+        read\_me  &     62 ms   &     19 ms & 3,26  \\ \hline
+        alice     &   2 960 ms   &    930 ms & 3,18  \\ \hline
+        BIG\_READ & 179 148 ms   &  57 859 ms & 3,09  \\
+        \hline
+      \end{tabular}
+    }
+
+    \label{tab:speedup_total_software_acc}
+  \end{table}
+
+Os \textit{speedups} obtidos estão dentro do esperado embora se detecte um decréscimo para ficheiros com um tamanho significativo. Esta anomalia pode ser um resultado de vários factores nomeadamente ao acesso da memória interna e externa. Da maneira como a divisão de trabalho está feita não se consegue garantir um equilíbrio de carga de trabalho na secção de codificação do texto. 
+
+Assim, o que pode ocorrer --- e que se verificou acontecer --- é um processador fazer mais escritas na memória externa do que os restantes. Também por este efeito, a probabilidade de haver um \textit{miss} várias vezes na \textit{cache} de dados aumenta pois a quantidade de texto que precisa de ser codificada é superior. Para além disso a \textit{cache} está a guardar as contagens obtidas anteriormente que podem ser facilmente substituídas se tiver muitos caracteres para codificar. Estes efeitos adversos também causam uma forte contenção no \textit{bus} \texttt{AXI} pois a memória interna com as contagens e a memória externa estão ligadas através do mesmo bus.
+
+É de notar que o \textit{speedup} obtido na secção da contagem de caracteres é muito baixo, o que contribui para a diminuição do \textit{speedup} global face ao valor esperado, 4.
+
+  

@@ -1,58 +1,46 @@
-\documentclass[a4paper]{article}
+\documentclass[a4paper]{scrartcl}
 
-\input{includes.tex}
+\usepackage{tecnico_relatorio}
+%\usepackage{textcomp}
+\usepackage[hypcap]{caption} % makes \ref point to top of figures and tables
+%\usepackage{rotating}
+\usepackage{float}
+%\usepackage[nottoc]{tocbibind}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{color}
+\usepackage[justification=centering]{caption}
+\usepackage{indentfirst} % indent first paragraph in section
 
 \begin{document}
-	\input{cover.tex}
+\input{cover.tex}
 
-	\tableofcontents
-	\pagenumbering{gobble}
+\tableofcontents
+\pagenumbering{gobble}
+\pagebreak
+\pagenumbering{arabic}
+\setcounter{page}{1}
 
-  \pagebreak
+\section{Introdução}
+\input{Introduction.tex}
 
-  \pagenumbering{arabic}
-  \setcounter{page}{1}
+\section{Sistema}
+\label{sec:sistema}
+\input{Sistema.tex}
 
-	\section{Introdução}
-  %\input{Introduction.tex}
+\section{Software}
+\input{Software.tex}
 
-	\section{Codificação de Huffman}
-	%\label{sec:theory}
-  %\input{Huffman.tex}
-
-	\section{Software}
-  %\input{Software.tex}
-
-  \section{Sistema}
-  \input{Sistema.tex}
-
-	\section{Acelerador}
-	%\label{sec:accelerator}
-  %\input{Accelerador.tex}
-
-	\section{Resultados}
-	%\label{sec:results}
-  %\input{Resultados.tex}
-
-	\pagebreak
-
-	\section{Conclusão}
-  %\input{Conclusion.tex}
-
-  \pagebreak
-
-  \listoffigures
-  \listoftables
-
-	% references
-    \nocite{*}
-	\bibliographystyle{plain}
-	\bibliography{refs} % no spaces between commas
+\section{Resultados}
+\input{Resultados.tex}
 
 
-  \pagebreak
+\section{Conclusão}
+\input{Conclusao.tex}
 
-  % anexo com as tabelas raw do acelerador
-  %\input{appendix.tex}
+\pagebreak
+
+\listoffigures
+\listoftables
 
 \end{document}

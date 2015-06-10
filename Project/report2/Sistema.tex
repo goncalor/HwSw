@@ -1,35 +1,52 @@
-O sistema opera a 75MHz com 4 MicroBlazes com a seguinte configuração.
-O processador mestre possui uma memória local de 64kB, 2 \texttt{AXI~Timers} de 32 bits ligados em cascata --- que resulta num \textit{timer} de 64 bits --- e duas \textit{caches} de 8~kB --- uma para dados e outra para instruções. Os restantes processadores escravos possuem uma memória local de 16 kB com a mesma configuração de cache (ambas as caches apresentam uma política \textit{write through}). São usadas duas memórias internas de 4kB em que uma está ligada no \textit{bus} \texttt{AXI} --- de forma a tomar partido da cache --- e a outra ligada ao \textit{bus} \texttt{AXI Lite} --- para não ter cache. A primeira memória interna ligada ao \texttt{AXI} é usada para a tabela de conversões, de caracter para representação de Huffman. A memória interna que não está ligada à cache é usada da seguinte forma:
+O sistema opera a 75~MHz com 4 \textit{MicroBlazes} com a seguinte configuração:
+o processador mestre possui uma memória local de 64~kB, 2 \texttt{AXI~Timers} de 32 bits ligados em cascata --- que resulta num \textit{timer} de 64 bits --- e uma \textit{cache} de 8~kB de dados. Os restantes processadores, escravos, possuem uma memória local de 16~kB com a mesma configuração de \textit{cache} (ambas as \textit{caches} apresentam uma política \textit{write-through}). São usadas duas memórias internas, uma de 4~kB e outra de 16~kB. A primeira está ligada ao \textit{bus} \texttt{AXI Lite} --- para não ter cache; a segunda ao \textit{bus} \texttt{AXI} --- de forma a tomar partido da cache --- é usada para guardar a tabela de conversões, de carácter para representação de Huffman.
+
+Em suma, o sistema é constituído pelos seguintes componentes:
 
 \begin{itemize}
-\item Primeiros 4 bytes para sincronizar os vários processadores.
-\item Desde o endereço 0x4 até 0x403 é usado pelo processador 1 para partilhar contagens com o processador 0.
-\item Desde o endereço 0x404 até 0x803 é usado pelo processador 2 para partilhar contagens com o processador 0.
-\item Os restantes endereços são usados pelo processador 3 partilhar contagens com o processador 2.
+	\item 1 \textit{MicroBlaze} mestre
+    \begin{itemize}
+		\item 64~kB de memória local
+        \item 8~kB de \textit{cache} de dados; 64~B de \textit{cache} de instruções
+	\end{itemize}
+    \item 3 \textit{MicroBlazes} escravos
+    \begin{itemize}
+		\item 16~kB de memória local
+        \item 8~kB de \textit{cache} de dados; 64~B de \textit{cache} de instruções
+	\end{itemize}
+    \item 1 memória interna de 4~kB, sem \textit{cache}
+    \item 1 memória interna de 16~kB, com \textit{cache}
+    \item 1 memória externa de 128~MB, com \textit{cache}
+    \item 1 temporizador AXI de 64 bits (2 de 32, em cascata)
+    \item 1 módulo UART
 \end{itemize}
 
-A memória externa está ligada através do \textit{bus} AXI4, de maneira a tomar partido da \textit{cache} de dados e instruções.
 
-O programa usado no processador mestre usa 57kB e os restantes 10kB.
+A memória externa está ligada através do \textit{bus} AXI4, de maneira a tomar partido da \textit{cache} de dados e instruções. A memória interna que não está ligada à cache é usada da seguinte forma:
 
-A \textit{stack} do processador mestre foi modificada pois a pesquisa na árvore é feita recursivamente. Como no pior caso a árvore tem 256 níveis podem ser ocupados aproximadamente $256 \times (4 + 4 + 4) = 3072$ B em \textit{stack}, visto que cada chamada recursiva usa dois ponteiros mais um \texttt{char} e \texttt{short} --- assumindo que são usados 4 bytes devido a alinhamentos. Contabilizando outros dados que são colocados na \textit{stack} por cada chamada, estima-se que o tamanho da \textit{stack} possa chegar a cerca de 5~kB. Para ter margem de segurança definiu-se no \textit{linker script} uma \textit{stack} com o número redondo de 10~kB.
+\begin{itemize}
+\item Primeiros 4 bytes para sincronizar os vários processadores;
+\item Endereços de 0x4 a 0x403 são usados pelo processador 1 para partilhar contagens com o processador 0;
+\item Endereços de 0x404 a 0x803 são usados pelo processador 2 para partilhar contagens com o processador 0;
+\item Endereços de 0x804 a 0xC03 são usados pelo processador 3 para partilhar contagens com o processador 2;
+\item As restantes posições não são utilizadas.
+\end{itemize}
 
-Os restantes processadores usam 1kB de \textit{stack} e de \textit{heap}, visto que o processamento feito não necessita de uma grande quantidade de memória.
 
-Também não foi usada qualquer optimização por parte do compilador (-o0).
+O programa usado no processador mestre usa cerca de 54~kB e os restantes cerca de 9~kB. Ao processador mestre foi atribuída uma \textit{stack} de 10~kB, pois a pesquisa na árvore é feita recursivamente. Como no pior caso a árvore tem 256 níveis podem ser ocupados aproximadamente $256 \times (4 + 4 + 4) = 3072$ B em \textit{stack}, visto que cada chamada recursiva usa dois ponteiros mais um \texttt{char} e \texttt{short} --- assumindo que são usados 4 bytes devido a alinhamentos. Contabilizando outros dados que são colocados na \textit{stack} por cada chamada, estima-se que o tamanho da \textit{stack} possa chegar a cerca de 5~kB. Para ter margem de segurança definiu-se no \textit{linker script} uma \textit{stack} com o número redondo de 10~kB. Os restantes processadores usam 1~kB de \textit{stack} e de \textit{heap}, visto que o processamento feito não necessita de uma grande quantidade de memória.
+
+Não foi usada qualquer optimização por parte do compilador (\texttt{-O0}).
 
 Alguns valores relativos à ocupação do sistema (valor absoluto e percentagem de ocupação) são:
 
-% Precisa de ser actualizado
 
 \begin{verbatim}
-    Slice registers                2850        5 %
-    Slice LUTs                     3746       13 %
-       used as Memory               422
-    occupied Slices                1515       22 %
-    LUT Flip Flop pairs used       4414
-    RAMB16BWERs                    14         12 %
-    RAMB8BWERs                     0           0 %
-    DSP48A1s                       3           5 %
+            Slice registers               8 652       15 %
+            Slice LUTs                   11 981       43 %
+               used as Memory             1 855
+            occupied Slices               4 355       63 %
+            LUT Flip Flop pairs used     13 690
+            RAMB16BWERs                      86       74 %
+            RAMB8BWERs                        0        0 %
+            DSP48A1s                         12       20 %
 \end{verbatim}
-
